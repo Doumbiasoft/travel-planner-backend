@@ -13,6 +13,10 @@ interface Env {
   SMTP_PASS: string;
   MAIL_FROM: string;
   MAIL_FROM_NAME: string;
+  JWT_SECRET: string;
+  JWT_REFRESH_SECRET: string;
+  AMADEUS_KEY: string;
+  AMADEUS_SECRET: string;
 }
 
 export const ENV: Env = {
@@ -27,4 +31,8 @@ export const ENV: Env = {
   SMTP_PASS: process.env.SMTP_PASS || "",
   MAIL_FROM: process.env.MAIL_FROM || "",
   MAIL_FROM_NAME: process.env.MAIL_FROM_NAME || "",
+  JWT_SECRET: process.env.JWT_SECRET || "",
+  JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "",
+  AMADEUS_KEY: process.env.AMADEUS_KEY || "",
+  AMADEUS_SECRET: process.env.AMADEUS_KEY || "",
 };
