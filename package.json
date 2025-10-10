@@ -47,9 +47,11 @@
     "reflect-metadata": "^0.2.2",
     "swagger-ui-express": "^5.0.1",
     "typescript": "^5.9.3",
-    "winston": "^3.18.3"
+    "winston": "^3.18.3",
+    "@types/cookie-parser": "^1.4.9"
   },
   "devDependencies": {
+    
     "tsx": "^4.20.6"
   }
 }
