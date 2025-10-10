@@ -1,0 +1,48 @@
+{
+  "name": "travel-planner-backend",
+  "version": "1.0.0",
+  "description": "Travel Planner is a full-stack web application designed to help users plan, organize, and manage their travel itineraries effortlessly",
+  "main": "dist/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "postinstall": "npm run build",
+    "serve": "npm run build && npm run start",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "Mouhamed Doumbia",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@reflet/express": "^2.0.0",
+    "@reflet/express-middlewares": "^2.0.0",
+    "@reflet/http": "^1.0.0",
+    "@scalar/express-api-reference": "^0.8.21",
+    "@types/compression": "^1.8.1",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.3",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.7.1",
+    "@types/node-cron": "^3.0.11",
+    "@types/nodemailer": "^7.0.2",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/winston": "^2.4.4",
+    "colors": "^1.4.0",
+    "compression": "^1.8.1",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.1.0",
+    "morgan": "^1.10.1",
+    "node-cron": "^4.2.1",
+    "nodemailer": "^7.0.9",
+    "reflect-metadata": "^0.2.2",
+    "swagger-ui-express": "^5.0.1",
+    "typescript": "^5.9.3",
+    "winston": "^3.18.3"
+  },
+  "devDependencies": {
+    "tsx": "^4.20.6"
+  }
+}
