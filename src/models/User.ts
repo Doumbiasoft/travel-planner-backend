@@ -57,6 +57,7 @@ const userSchema = new Schema(
       type: String,
       require: true,
       unique: true,
+      index: true,
       lowercase: true,
       validate: emailValidators,
     },
@@ -73,6 +74,7 @@ const userSchema = new Schema(
     oauthUid: {
       type: String,
       require: false,
+      index: true,
       default: "",
     },
     oauthPicture: {
