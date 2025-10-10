@@ -5,6 +5,7 @@ interface Env {
   NODE_ENV: string;
   PORT: number;
   API_BASE_URL: string;
+  CLIENT_URL: string;
   MONGO_URI: string;
   SMTP_HOST: string;
   SMTP_PORT: number;
@@ -22,6 +23,7 @@ interface Env {
 export const ENV: Env = {
   NODE_ENV: process.env.NODE_ENV || "development",
   API_BASE_URL: process.env.API_BASE_URL || "http://localhost",
+  CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
   PORT: Number(process.env.PORT) || 3000,
   MONGO_URI: process.env.MONGO_URI || "",
   SMTP_HOST: process.env.SMTP_HOST || "",
