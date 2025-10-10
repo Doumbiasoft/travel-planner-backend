@@ -24,7 +24,7 @@ export const ENV: Env = {
   NODE_ENV: process.env.NODE_ENV || "development",
   API_BASE_URL: process.env.API_BASE_URL || "http://localhost",
   CLIENT_URL: process.env.CLIENT_URL || "http://localhost:5173",
-  PORT: Number(process.env.PORT) || 3000,
+  PORT: Number(process.env.PORT) || 3001,
   MONGO_URI: process.env.MONGO_URI || "",
   SMTP_HOST: process.env.SMTP_HOST || "",
   SMTP_PORT: Number(process.env.SMTP_PORT) || 0,
