@@ -1,7 +1,7 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 import { ValidationPatterns } from "../middlewares/validation.middleware";
 
-export interface IUser extends Document {
+export interface User extends Document {
   _id: string;
   firstName: string;
   lastName: string;
@@ -16,7 +16,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
-export type Users = IUser[];
+export type Users = User[];
 
 const emailValidators = [
   {
@@ -101,6 +101,6 @@ const userSchema = new Schema(
   { timestamps: true }
 );
 
-const UserModel: Model<IUser> = mongoose.model<IUser>("User", userSchema);
+const UserModel: Model<User> = mongoose.model<User>("User", userSchema);
 
 export default UserModel;
