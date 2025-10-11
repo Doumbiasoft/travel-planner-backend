@@ -2,6 +2,7 @@ import { ClientSession } from "mongoose";
 import EmailBoxModel, { EmailBox } from "../models/EmailBox";
 import { logger } from "../utils/logger";
 import { MailOptions, sendEmail } from "./mailer.service";
+import { processAttachments } from "../utils/fileAttachmentHelper";
 
 const findUnsentEmails = async () => {
   return await EmailBoxModel.find({ sent: false });
@@ -57,6 +58,11 @@ export const handleEmailCron = async () => {
     for (const email of unsentEmails) {
       const session = await startTransaction();
       try {
+        let processedAttachments: any = [];
+        if (email.attachments?.length! > 0) {
+          processedAttachments = await processAttachments(email.attachments);
+        }
+
         //Prepare Email to be sent
         const data: MailOptions = {
           from: email.from,
@@ -65,7 +71,7 @@ export const handleEmailCron = async () => {
           bcc: email.bcc,
           subject: email.subject,
           html: email.content,
-          attachments: email.attachments,
+          attachments: processedAttachments,
         };
 
         await sendEmail(data);

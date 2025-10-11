@@ -14,6 +14,7 @@ import { HttpStatus } from "./types/httpStatus";
 import { sendResponse } from "./utils/apiResponseFormat";
 import { readTemplateContent } from "./utils/emailTemplateReader";
 import { ACCOUNT_ACTIVATION_TEMPLATE } from "./utils/constantEmailTemplatesNames";
+import { createAttachment } from "./utils/fileAttachmentHelper";
 
 connectDB();
 const app = express();
@@ -38,16 +39,18 @@ app.post("/api/test-email", async (_req, res) => {
   template = template.replace("%Name%", "Mouhamed");
 
   const email: Partial<EmailBox> = {
-    //from: { name: ENV.MAIL_FROM_NAME, email: ENV.MAIL_FROM },
     to: { name: "Mouhamed Doumbia", email: "doumbiasoft@gmail.com" },
     subject: "🎉 Account Activation !",
     content: template,
     attachments: [
-      {
-        filename: "Mouhamed-Resume",
-        path: "https://drive.google.com/file/d/1BCvYejxBztBgiC7O77Rzg5f7wRyyZK0G/view?usp=sharing",
-        contentType: "application/pdf",
-      },
+      createAttachment(
+        "https://drive.google.com/file/d/1BCvYejxBztBgiC7O77Rzg5f7wRyyZK0G/view?usp=sharing",
+        "Mouhamed-Resume"
+      ),
+      createAttachment(
+        "https://helios-i.mashable.com/imagery/videos/0239WPrU0dBqySr0dTv8Q0h/hero-image.fill.size_1248x702.v1753118514.jpg",
+        "Predator"
+      ),
     ],
   };
 
