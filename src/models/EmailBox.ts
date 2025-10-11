@@ -1,23 +1,39 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
+export interface EmailAddress {
+  name: string;
+  email: string;
+}
+export interface Attachment {
+  filename: string;
+  path?: string; // file path on disk
+  content?: Buffer | string; // inline file content
+  contentType?: string; // optional MIME type
+}
+
 export interface EmailBox extends Document {
   _id: string;
-  to: [{ name: string; address: string }];
+  from?: EmailAddress;
+  to: EmailAddress | EmailAddress[];
+  cc?: EmailAddress | EmailAddress[];
+  bcc?: EmailAddress | EmailAddress[];
   subject: string;
   content: string;
-  attachments?: [
-    {
-      _id: string;
-      filename: string;
-      path: string;
-      contentType?: string;
-    }
-  ];
+  attachments?: Attachment[];
   sent?: boolean;
 }
 
 const emailBoxSchema = new Schema(
   {
+    from: {
+      type: [
+        {
+          name: { type: String, require: true },
+          address: { type: String, require: true },
+        },
+      ],
+      require: false,
+    },
     to: {
       type: [
         {
@@ -27,13 +43,32 @@ const emailBoxSchema = new Schema(
       ],
       require: true,
     },
+    cc: {
+      type: [
+        {
+          name: { type: String, require: true },
+          address: { type: String, require: true },
+        },
+      ],
+      require: false,
+    },
+    bcc: {
+      type: [
+        {
+          name: { type: String, require: true },
+          address: { type: String, require: true },
+        },
+      ],
+      require: false,
+    },
     subject: { type: String, require: true },
     content: { type: String, require: true },
     attachments: {
       type: [
         {
           filename: { type: String, require: true },
-          path: { type: String, require: true },
+          path: { type: String, require: false },
+          content: { type: String, require: false },
           contentType: { type: String, require: false },
         },
       ],
