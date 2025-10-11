@@ -35,7 +35,7 @@ const abortTransaction = async (session: ClientSession) => {
   await session.endSession();
 };
 
-export const saveEmailBox = async (emailBox: EmailBox) => {
+export const saveEmailBox = async (emailBox: Partial<EmailBox>) => {
   return await EmailBoxModel.create(emailBox);
 };
 
@@ -57,8 +57,6 @@ export const handleEmailCron = async () => {
     for (const email of unsentEmails) {
       const session = await startTransaction();
       try {
-        // Prepare attachments (if any)
-
         //Prepare Email to be sent
         const data: MailOptions = {
           from: email.from,
@@ -67,7 +65,7 @@ export const handleEmailCron = async () => {
           bcc: email.bcc,
           subject: email.subject,
           html: email.content,
-          //attachments: [],
+          attachments: email.attachments,
         };
 
         await sendEmail(data);

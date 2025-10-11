@@ -26,19 +26,17 @@ export interface EmailBox extends Document {
 const emailBoxSchema = new Schema(
   {
     from: {
-      type: [
-        {
-          name: { type: String, require: true },
-          address: { type: String, require: true },
-        },
-      ],
+      type: {
+        name: { type: String, require: true },
+        email: { type: String, require: true },
+      },
       require: false,
     },
     to: {
       type: [
         {
           name: { type: String, require: true },
-          address: { type: String, require: true },
+          email: { type: String, require: true },
         },
       ],
       require: true,
@@ -47,7 +45,7 @@ const emailBoxSchema = new Schema(
       type: [
         {
           name: { type: String, require: true },
-          address: { type: String, require: true },
+          email: { type: String, require: true },
         },
       ],
       require: false,
@@ -56,7 +54,7 @@ const emailBoxSchema = new Schema(
       type: [
         {
           name: { type: String, require: true },
-          address: { type: String, require: true },
+          email: { type: String, require: true },
         },
       ],
       require: false,

@@ -57,7 +57,7 @@ export const sendEmail = async (options: MailOptions) => {
       text: options.text || "",
       html: options.html,
       attachments: options.attachments,
-      priority: "normal",
+      priority: "high",
     });
 
     logger.info(`📧 Email sent: ${info.messageId}`);
