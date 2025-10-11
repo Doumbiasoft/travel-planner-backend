@@ -1,6 +1,7 @@
 import "reflect-metadata";
 import app from "./app";
 import { ENV } from "./config/env";
+import { setupCronJobs } from "./cron/cronJob";
 import "colors";
 
 app.listen(ENV.PORT, () => {
@@ -30,4 +31,5 @@ app.listen(ENV.PORT, () => {
   console.log(
     `----------------------------------------------------------------`.red
   );
+  setupCronJobs();
 });

@@ -1,10 +1,10 @@
 import mongoose, { Schema, Document, Model } from "mongoose";
 
-export interface EmailAddress {
+interface EmailAddress {
   name: string;
   email: string;
 }
-export interface Attachment {
+interface Attachment {
   filename: string;
   path?: string; // file path on disk
   content?: Buffer | string; // inline file content

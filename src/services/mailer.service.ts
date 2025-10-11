@@ -47,7 +47,9 @@ const formatAddresses = (addr?: EmailAddress | EmailAddress[]) => {
 export const sendEmail = async (options: MailOptions) => {
   try {
     const info = await transporter.sendMail({
-      from: options.from ? formatAddress(options.from) : ENV.MAIL_FROM,
+      from: options.from
+        ? formatAddress(options.from)
+        : formatAddress({ name: ENV.MAIL_FROM_NAME, email: ENV.MAIL_FROM }),
       to: formatAddresses(options.to),
       cc: formatAddresses(options.cc),
       bcc: formatAddresses(options.bcc),
@@ -55,6 +57,7 @@ export const sendEmail = async (options: MailOptions) => {
       text: options.text || "",
       html: options.html,
       attachments: options.attachments,
+      priority: "normal",
     });
 
     logger.info(`📧 Email sent: ${info.messageId}`);
