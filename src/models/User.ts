@@ -12,7 +12,9 @@ export interface User extends Document {
   oauthPicture: string;
   isOauth: boolean;
   passwordResetToken: string;
+  activationToken: string;
   isActive: boolean;
+  isAdmin: false;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -30,7 +32,9 @@ const emailValidators = [
   {
     validator: async function (email: string) {
       // Query the database to see if another user exists with the same email
-      const user = await mongoose.models.User.findOne({ email });
+      const user = await mongoose.models.User.findOne({
+        email,
+      });
       // Return true if no other user is found, indicating a unique email
       return !user;
     },
@@ -92,7 +96,17 @@ const userSchema = new Schema(
       require: false,
       default: "",
     },
+    activationToken: {
+      type: String,
+      require: false,
+      default: "",
+    },
     isActive: {
+      type: Boolean,
+      require: false,
+      default: false,
+    },
+    isAdmin: {
       type: Boolean,
       require: false,
       default: false,

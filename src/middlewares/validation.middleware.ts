@@ -142,4 +142,5 @@ export const ValidationPatterns = {
   MONGODB_ID: /^[0-9a-fA-F]{24}$/,
   URL: /^https?:\/\/.+/,
   SLUG: /^[a-z0-9]+(?:-[a-z0-9]+)*$/,
+  PASSWORD: /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[\W_]).{8,}$/,
 } as const;
