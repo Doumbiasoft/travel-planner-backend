@@ -12,7 +12,7 @@ import { saveEmailBox } from "./services/mailbox.service";
 import { EmailBox } from "./models/EmailBox";
 import { HttpStatus } from "./types/httpStatus";
 import { sendResponse } from "./utils/apiResponseFormat";
-import { readTemplateContent } from "./utils/emailTemplateReader";
+import { readEmailTemplateContent } from "./utils/emailTemplateReader";
 import { ACCOUNT_ACTIVATION_TEMPLATE } from "./utils/constantEmailTemplatesNames";
 import { createAttachment } from "./utils/fileAttachmentHelper";
 
@@ -34,9 +34,11 @@ app.use(morgan("dev"));
 /** Routes */
 
 app.post("/api/test-email", async (_req, res) => {
-  let template: string = await readTemplateContent(ACCOUNT_ACTIVATION_TEMPLATE);
+  let template: any = await readEmailTemplateContent(
+    ACCOUNT_ACTIVATION_TEMPLATE
+  );
 
-  template = template.replace("%Name%", "Mouhamed");
+  template = template.replaceAll("%Name%", "Mouhamed");
 
   const email: Partial<EmailBox> = {
     to: { name: "Mouhamed Doumbia", email: "doumbiasoft@gmail.com" },
@@ -50,6 +52,10 @@ app.post("/api/test-email", async (_req, res) => {
       createAttachment(
         "https://helios-i.mashable.com/imagery/videos/0239WPrU0dBqySr0dTv8Q0h/hero-image.fill.size_1248x702.v1753118514.jpg",
         "Predator"
+      ),
+      createAttachment(
+        "https://fikia-dev.s3.eu-north-1.amazonaws.com/0e6b2880-28d0-4b3e-93c8-d08c1c777992-IMG_4841.png?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=AKIA2UC26QRHEXWVQRYL%2F20251011%2Feu-north-1%2Fs3%2Faws4_request&X-Amz-Date=20251011T224226Z&X-Amz-Expires=604800&X-Amz-Signature=fa8fb4f5631707b3e6716f7622d08b9afbff03983ddb10d3e4b09ce712414607&X-Amz-SignedHeaders=host",
+        "Chat Image"
       ),
     ],
   };

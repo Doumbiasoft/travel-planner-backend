@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-export const readTemplateContent = async (TemplateFileName: string) => {
+export const readEmailTemplateContent = async (TemplateFileName: string) => {
   const filePath: string = path.join(
     process.cwd(),
     "src/emailTemplates",
