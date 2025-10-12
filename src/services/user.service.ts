@@ -33,7 +33,7 @@ export const updateUserByActivationToken = async (
   activationToken: string,
   user: Partial<User>
 ) => {
-  return await UserModel.findByIdAndUpdate(
+  return await UserModel.findOneAndUpdate(
     { activationToken: activationToken },
     user,
     {

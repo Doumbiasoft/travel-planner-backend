@@ -8,6 +8,7 @@ import { setupDynamicOpenAPI } from "./utils/openAPIDocsGenerator";
 import "reflect-metadata";
 import connectDB from "./db/mongodb-config";
 import { registerRoutes } from "./routes";
+import { ENV } from "./config/env";
 
 connectDB();
 const app = express();
@@ -15,7 +16,12 @@ const app = express();
 /** Middlewares */
 app.use(express.json());
 app.use(cookieParser());
-app.use(cors());
+app.use(
+  cors({
+    origin: ENV.CLIENT_URL,
+    credentials: true,
+  })
+);
 app.use(compression());
 app.use(morgan("dev"));
 

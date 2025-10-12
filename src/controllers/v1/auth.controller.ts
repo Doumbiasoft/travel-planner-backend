@@ -105,7 +105,7 @@ class AuthController {
         ENV.JWT_SECRET
       );
       user.activationToken = accountActivationToken;
-      user.save();
+      await user.save();
 
       const name = firstName.toString().split(" ")[0];
       template = template
@@ -175,7 +175,7 @@ class AuthController {
       });
 
       user.activationToken = "";
-      user.save();
+      await user.save({ validateBeforeSave: false });
 
       return sendResponse(
         res.cookie("refreshToken", refreshToken, {
@@ -187,7 +187,7 @@ class AuthController {
         }),
         { accessToken: accessToken },
         "User signed in successfully",
-        HttpStatus.CREATED
+        HttpStatus.OK
       );
     } catch (err: any) {
       return sendError(res, err.message, HttpStatus.BAD_REQUEST);
@@ -336,7 +336,7 @@ class AuthController {
     );
     const passwordResetToken = jwt.sign({ _id: user._id }, ENV.JWT_SECRET);
     user.passwordResetToken = passwordResetToken;
-    user.save();
+    await user.save({ validateBeforeSave: false });
     const name = user.firstName.toString().split(" ")[0];
     template = template
       .replaceAll("%Name%", name)
@@ -537,6 +537,126 @@ class AuthController {
         { ok: true },
         "Account deleted successfully",
         HttpStatus.NO_CONTENT
+      );
+    } catch (err: any) {
+      return sendError(res, err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
+  @Post("/oauth-google")
+  @Use(
+    endpointMetadata({
+      summary: "Google Oauth-2.0",
+      description: "Sign in or up a user with his Google Account",
+    }),
+    validateBody({
+      rules: [
+        {
+          field: "firstName",
+          required: true,
+          type: "string",
+          minLength: 3,
+          maxLength: 50,
+        },
+        {
+          field: "lastName",
+          required: true,
+          type: "string",
+          minLength: 3,
+          maxLength: 50,
+        },
+        {
+          field: "email",
+          required: true,
+          type: "string",
+          pattern: ValidationPatterns.EMAIL,
+        },
+        {
+          field: "oauthUid",
+          required: true,
+          type: "string",
+        },
+        {
+          field: "oauthProvider",
+          required: true,
+          type: "string",
+        },
+        {
+          field: "oauthPicture",
+          required: true,
+          type: "string",
+        },
+      ],
+    }),
+    logRequest()
+  )
+  async oauthGoogle(@Req req: Request, @Res res: Response) {
+    /** const user = {
+              firstName: credentialResponse.given_name,
+              lastName: credentialResponse.family_name,
+              email: credentialResponse.email,
+              oauthUid: credentialResponse.id,
+              oauthPicture: credentialResponse.picture
+            }; */
+    try {
+      const { firstName, lastName, email, password, oauthUid, oauthPicture } =
+        req.body;
+      if (
+        !firstName ||
+        !lastName ||
+        !email ||
+        !password ||
+        !oauthUid ||
+        !oauthPicture
+      )
+        return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
+
+      let user = await findUser(email, true);
+      if (!user) {
+        const data: Partial<User> = {
+          firstName: firstName,
+          lastName: lastName,
+          email: email,
+          password: "",
+          passwordResetToken: "",
+          oauthUid: oauthUid,
+          oauthProvider: "Google",
+          oauthPicture: oauthPicture,
+          isActive: true,
+          isOauth: true,
+        };
+        user = await createUser(data);
+      } else {
+        user.firstName = firstName;
+        user.lastName = lastName;
+        user.oauthPicture = oauthPicture;
+        user.oauthUid = oauthUid;
+        user.oauthProvider = "Google";
+        user.isActive = true;
+        user.activationToken = "";
+        user.passwordResetToken = "";
+        user.isOauth = true;
+        await user.save({ validateBeforeSave: false });
+      }
+
+      const accessToken = jwt.sign({ _id: user._id }, ENV.JWT_SECRET, {
+        expiresIn: "15m",
+      });
+      const refreshToken = jwt.sign({ _id: user._id }, ENV.JWT_REFRESH_SECRET, {
+        expiresIn: "7d",
+      });
+
+      return sendResponse(
+        res.cookie("refreshToken", refreshToken, {
+          httpOnly: true,
+          secure: ENV.NODE_ENV === "production",
+          sameSite: "strict",
+          path: REFRESH_TOKEN_PATH,
+          maxAge: 7 * 24 * 60 * 60 * 1000,
+        }),
+        { accessToken: accessToken },
+        "User signed in successfully",
+        HttpStatus.OK
       );
     } catch (err: any) {
       return sendError(res, err.message, HttpStatus.BAD_REQUEST);
