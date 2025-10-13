@@ -7,6 +7,7 @@ import {
 } from "../services/mailbox.service";
 
 let sendingEmails = false;
+let deletingEmails = false;
 
 export const setupCronJobs = () => {
   cron.schedule(CronExpression.everyFiveSeconds(), async () => {
@@ -24,6 +25,12 @@ export const setupCronJobs = () => {
   });
 
   cron.schedule(CronExpression.everyWeekdayAt9AM(), async () => {
-    await handleDeleteEmailsSentCron();
+    deletingEmails = true;
+    try {
+      await handleDeleteEmailsSentCron();
+    } catch (error) {
+    } finally {
+      deletingEmails = false;
+    }
   });
 };

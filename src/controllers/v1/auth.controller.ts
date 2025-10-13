@@ -250,7 +250,7 @@ class AuthController {
   @Post("/logout")
   @Use(
     endpointMetadata({
-      summary: "User log out",
+      summary: "Log out a user",
       description: "This logout the current user",
     }),
     logRequest()
