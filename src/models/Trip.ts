@@ -31,8 +31,10 @@ export interface Trip extends Document {
   _id: string;
   userId: string;
   tripName: string;
+  origin: string;
+  originCityCode: String;
   destination: String;
-  cityCode: String;
+  destinationCityCode: String;
   startDate: Date;
   endDate: Date;
   budget: number;
@@ -101,8 +103,10 @@ const itinerarySchema = new Schema(
     },
 
     tripName: { type: String, required: true },
+    origin: String,
+    originCityCode: String,
     destination: String,
-    cityCode: String,
+    destinationCityCode: String,
     startDate: Date,
     endDate: Date,
     budget: { type: Number, min: 0, default: 0 },

@@ -100,12 +100,22 @@ class TripController {
           type: "string",
         },
         {
+          field: "origin",
+          required: true,
+          type: "string",
+        },
+        {
+          field: "originCityCode",
+          required: true,
+          type: "string",
+        },
+        {
           field: "destination",
           required: true,
           type: "string",
         },
         {
-          field: "cityCode",
+          field: "destinationCityCode",
           required: true,
           type: "string",
         },
@@ -137,14 +147,24 @@ class TripController {
     if (!req.user?._id) {
       return sendError(res, "Unauthorized", HttpStatus.UNAUTHORIZED);
     }
-    const { tripName, destination, cityCode, startDate, endDate, budget } =
-      req.body;
+    const {
+      tripName,
+      origin,
+      originCityCode,
+      destination,
+      destinationCityCode,
+      startDate,
+      endDate,
+      budget,
+    } = req.body;
 
     try {
       if (
         !tripName ||
+        !origin ||
+        !originCityCode ||
         !destination ||
-        !cityCode ||
+        !destinationCityCode ||
         !startDate ||
         !endDate ||
         !budget

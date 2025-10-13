@@ -4,6 +4,7 @@ import { setApiPrefix } from "../../config/apiPrefix";
 import { AuthController } from "../../controllers/v1/auth.controller";
 import { TripController } from "../../controllers/v1/trip.controller";
 import { PdfController } from "../../controllers/v1/pdf.controller";
+import { AmadeusController } from "../../controllers/v1/amadeus.controller";
 
 /**
  * Register all v1 API controllers with dynamic prefix
@@ -11,5 +12,10 @@ import { PdfController } from "../../controllers/v1/pdf.controller";
 export function registerV1Routes(app: Application, apiPrefix: string): void {
   // Set the API prefix before register routes
   setApiPrefix(apiPrefix);
-  register(app, [AuthController, TripController, PdfController]);
+  register(app, [
+    AuthController,
+    TripController,
+    PdfController,
+    AmadeusController,
+  ]);
 }

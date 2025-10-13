@@ -36,5 +36,5 @@ export const ENV: Env = {
   JWT_SECRET: process.env.JWT_SECRET || "",
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "",
   AMADEUS_KEY: process.env.AMADEUS_KEY || "",
-  AMADEUS_SECRET: process.env.AMADEUS_KEY || "",
+  AMADEUS_SECRET: process.env.AMADEUS_SECRET || "",
 };
