@@ -27,7 +27,7 @@ interface Marker extends Document {
   label: string;
 }
 
-export interface Itinerary extends Document {
+export interface Trip extends Document {
   _id: string;
   userId: string;
   tripName: string;
@@ -51,7 +51,7 @@ export interface Itinerary extends Document {
   collaborators: [string];
   createdAt: Date;
 }
-export type Itineraries = Itinerary[];
+export type Trips = Trip[];
 
 const eventSchema = new Schema({
   kind: {
@@ -124,9 +124,6 @@ const itinerarySchema = new Schema(
   { timestamps: true }
 );
 
-const ItineraryModel: Model<Itinerary> = mongoose.model<Itinerary>(
-  "Itinerary",
-  itinerarySchema
-);
+const TripModel: Model<Trip> = mongoose.model<Trip>("Trip", itinerarySchema);
 
-export default ItineraryModel;
+export default TripModel;

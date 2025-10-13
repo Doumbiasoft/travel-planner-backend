@@ -85,9 +85,9 @@ class AuthController {
     let template: any = await readEmailTemplateContent(
       ACCOUNT_ACTIVATION_TEMPLATE
     );
+    const { firstName, lastName, email, password } = req.body;
 
     try {
-      const { firstName, lastName, email, password } = req.body;
       if (!firstName || !lastName || !email || !password)
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
 
@@ -155,8 +155,9 @@ class AuthController {
     logRequest()
   )
   async login(@Req req: Request, @Res res: Response) {
+    const { email, password } = req.body;
+
     try {
-      const { email, password } = req.body;
       if (!email || !password)
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
 
@@ -284,25 +285,34 @@ class AuthController {
   )
   async activate(@Req req: Request, @Res res: Response) {
     const { accountActivationToken } = req.body;
-    if (!accountActivationToken)
-      return sendError(res, "Missing activation token", HttpStatus.BAD_REQUEST);
-    const user = await updateUserByActivationToken(accountActivationToken, {
-      activationToken: "",
-      isActive: true,
-    });
-    if (!user)
-      return sendError(
-        res,
-        "Activation token expired",
-        HttpStatus.UNAUTHORIZED
-      );
 
-    return sendResponse(
-      res,
-      { ok: true },
-      "User account activated successfully",
-      HttpStatus.OK
-    );
+    try {
+      if (!accountActivationToken)
+        return sendError(
+          res,
+          "Missing activation token",
+          HttpStatus.BAD_REQUEST
+        );
+      const user = await updateUserByActivationToken(accountActivationToken, {
+        activationToken: "",
+        isActive: true,
+      });
+      if (!user)
+        return sendError(
+          res,
+          "Activation token expired",
+          HttpStatus.UNAUTHORIZED
+        );
+
+      return sendResponse(
+        res,
+        { ok: true },
+        "User account activated successfully",
+        HttpStatus.OK
+      );
+    } catch (err: any) {
+      return sendError(res, err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Post("/reset-password")
@@ -325,38 +335,43 @@ class AuthController {
   )
   async resetPassword(@Req req: Request, @Res res: Response) {
     const { email } = req.body;
-    if (!email)
-      return sendError(res, "Missing email field", HttpStatus.BAD_REQUEST);
-    const user = await findUser(email, true);
-    if (!user)
-      return sendError(res, "Account not found", HttpStatus.UNAUTHORIZED);
 
-    let template: any = await readEmailTemplateContent(
-      ACCOUNT_PASSWORD_RESET_TEMPLATE
-    );
-    const passwordResetToken = jwt.sign({ _id: user._id }, ENV.JWT_SECRET);
-    user.passwordResetToken = passwordResetToken;
-    await user.save({ validateBeforeSave: false });
-    const name = user.firstName.toString().split(" ")[0];
-    template = template
-      .replaceAll("%Name%", name)
-      .replace(
-        "%Link%",
-        `${ENV.CLIENT_URL}/account/reset-password/${passwordResetToken}`
+    try {
+      if (!email)
+        return sendError(res, "Missing email field", HttpStatus.BAD_REQUEST);
+      const user = await findUser(email, true);
+      if (!user)
+        return sendError(res, "Account not found", HttpStatus.UNAUTHORIZED);
+
+      let template: any = await readEmailTemplateContent(
+        ACCOUNT_PASSWORD_RESET_TEMPLATE
       );
-    const resetPasswordEmail: Partial<EmailBox> = {
-      to: { name: name, email: email },
-      subject: "🔁 🔒 Reset Password!",
-      content: template,
-    };
+      const passwordResetToken = jwt.sign({ _id: user._id }, ENV.JWT_SECRET);
+      user.passwordResetToken = passwordResetToken;
+      await user.save({ validateBeforeSave: false });
+      const name = user.firstName.toString().split(" ")[0];
+      template = template
+        .replaceAll("%Name%", name)
+        .replace(
+          "%Link%",
+          `${ENV.CLIENT_URL}/account/reset-password/${passwordResetToken}`
+        );
+      const resetPasswordEmail: Partial<EmailBox> = {
+        to: { name: name, email: email },
+        subject: "🔁 🔒 Reset Password!",
+        content: template,
+      };
 
-    await saveEmailBox(resetPasswordEmail);
-    return sendResponse(
-      res,
-      { ok: true },
-      "Reset password email has been sent successfully",
-      HttpStatus.OK
-    );
+      await saveEmailBox(resetPasswordEmail);
+      return sendResponse(
+        res,
+        { ok: true },
+        "Reset password email has been sent successfully",
+        HttpStatus.OK
+      );
+    } catch (err: any) {
+      return sendError(res, err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Post("/verify-current-password")
@@ -379,20 +394,25 @@ class AuthController {
   )
   async verifyCurrentPassword(@Req req: Request, @Res res: Response) {
     const { password } = req.body;
-    if (!password)
-      return sendError(res, "Missing password", HttpStatus.BAD_REQUEST);
-    const currentUserId = req.user?._id;
-    if (!currentUserId)
-      return sendError(res, "Unauthorized", HttpStatus.UNAUTHORIZED);
-    const user = await findUserById(currentUserId);
-    if (!user)
-      return sendError(res, "Account not found", HttpStatus.UNAUTHORIZED);
 
-    const match = await bcrypt.compare(password, user.password);
-    if (!match)
-      return sendError(res, "Invalid password", HttpStatus.UNAUTHORIZED);
+    try {
+      if (!password)
+        return sendError(res, "Missing password", HttpStatus.BAD_REQUEST);
+      const currentUserId = req.user?._id;
+      if (!currentUserId)
+        return sendError(res, "Unauthorized", HttpStatus.UNAUTHORIZED);
+      const user = await findUserById(currentUserId);
+      if (!user)
+        return sendError(res, "Account not found", HttpStatus.UNAUTHORIZED);
 
-    return sendResponse(res, { ok: true }, "Password matched", HttpStatus.OK);
+      const match = await bcrypt.compare(password, user.password);
+      if (!match)
+        return sendError(res, "Invalid password", HttpStatus.UNAUTHORIZED);
+
+      return sendResponse(res, { ok: true }, "Password matched", HttpStatus.OK);
+    } catch (err: any) {
+      return sendError(res, err.message, HttpStatus.BAD_REQUEST);
+    }
   }
 
   @Patch("/change-password")
@@ -419,8 +439,9 @@ class AuthController {
     logRequest()
   )
   async changePassword(@Req req: Request, @Res res: Response) {
+    const { email, password } = req.body;
+
     try {
-      const { email, password } = req.body;
       if (!email || !password)
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
 
@@ -471,8 +492,9 @@ class AuthController {
     logRequest()
   )
   async updateProfile(@Req req: Request, @Res res: Response) {
+    const { firstName, lastName } = req.body;
+
     try {
-      const { firstName, lastName } = req.body;
       if (!firstName || !lastName)
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
 
@@ -525,8 +547,9 @@ class AuthController {
     logRequest()
   )
   async deleteAccount(@Req req: Request, @Res res: Response) {
+    const { email } = req.body;
+
     try {
-      const { email } = req.body;
       if (!email)
         return sendError(res, "Missing email field", HttpStatus.BAD_REQUEST);
 
@@ -598,9 +621,9 @@ class AuthController {
               oauthUid: credentialResponse.id,
               oauthPicture: credentialResponse.picture
             }; */
+    const { firstName, lastName, email, password, oauthUid, oauthPicture } =
+      req.body;
     try {
-      const { firstName, lastName, email, password, oauthUid, oauthPicture } =
-        req.body;
       if (
         !firstName ||
         !lastName ||

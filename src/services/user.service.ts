@@ -1,4 +1,4 @@
-import ItineraryModel from "../models/Itinerary";
+import ItineraryModel from "../models/Trip";
 import UserModel, { User } from "../models/User";
 
 export const findAllUsers = async () => {
