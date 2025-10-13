@@ -11,7 +11,8 @@ import { validateQuery } from "../../middlewares/validation.middleware";
 import { findBestPackage } from "../../utils/scorer";
 import Trip from "../../models/Trip";
 import { formatPriceWithSymbol } from "../../utils/currency";
-
+import NodeCache from "node-cache";
+const cache = new NodeCache({ stdTTL: 3600 }); // 1 hour
 @Router(buildRoute("v1/amadeus"))
 class AmadeusController {
   @Get("/city-code")
@@ -41,7 +42,17 @@ class AmadeusController {
     if (!keyword) {
       return sendError(res, "Keyword is required", HttpStatus.BAD_REQUEST);
     }
+
     try {
+      const cached = cache.get(keyword);
+      if (cached)
+        return sendResponse(
+          res,
+          cached,
+          "Fetched all cities successfully",
+          HttpStatus.OK
+        );
+
       const response = await amadeus.referenceData.locations.get({
         keyword,
         subType: "CITY,AIRPORT", // search both cities and airports
@@ -51,7 +62,7 @@ class AmadeusController {
         name: item.name,
         iataCode: item.iataCode,
       }));
-
+      cache.set(keyword, data);
       return sendResponse(
         res,
         data,
@@ -65,7 +76,7 @@ class AmadeusController {
 
   @Get("/search")
   @Use(
-     authMiddleware,
+    authMiddleware,
     endpointMetadata({
       summary: "Get trip offers",
       description: "Get recommended trip offers info",
@@ -147,7 +158,6 @@ class AmadeusController {
         })
         .catch(() => ({ data: [] }));
 
-    
       const hotels = hotelsListResp.data || [];
 
       const best = findBestPackage(flights, hotels, Number(budget));
@@ -167,8 +177,17 @@ class AmadeusController {
       };
 
       const tip = best
-        ? `Recommended: flight ${formatPriceWithSymbol(getFlightPrice(best.flight), currency)} + hotel ${formatPriceWithSymbol(getHotelPrice(best.hotel), currency)}`
-        : `No package fits budget ${formatPriceWithSymbol(Number(budget), currency)}`;
+        ? `Recommended: flight ${formatPriceWithSymbol(
+            getFlightPrice(best.flight),
+            currency
+          )} + hotel ${formatPriceWithSymbol(
+            getHotelPrice(best.hotel),
+            currency
+          )}`
+        : `No package fits budget ${formatPriceWithSymbol(
+            Number(budget),
+            currency
+          )}`;
 
       if (tripId) {
         await Trip.findByIdAndUpdate(tripId, {
@@ -181,12 +200,14 @@ class AmadeusController {
 
       const data = {
         tip,
-        recommended: best ? {
-          ...best,
-          currency,
-          flightPrice: getFlightPrice(best.flight),
-          hotelPrice: getHotelPrice(best.hotel),
-        } : null,
+        recommended: best
+          ? {
+              ...best,
+              currency,
+              flightPrice: getFlightPrice(best.flight),
+              hotelPrice: getHotelPrice(best.hotel),
+            }
+          : null,
         flights: flights.slice(0, 6),
         hotels: hotels.slice(0, 6),
         currency,

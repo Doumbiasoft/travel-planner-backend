@@ -1,4 +1,4 @@
-declare module 'amadeus' {
+declare module "amadeus" {
   interface AmadeusConfig {
     clientId: string;
     clientSecret: string;
@@ -34,7 +34,6 @@ declare module 'amadeus' {
         };
       };
     };
-    // Add more API endpoints as you use them
   }
 
   export = Amadeus;

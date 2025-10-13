@@ -92,19 +92,18 @@ External APIs (Amadeus, Google Maps)
 
 **Routes(Not Comprehensive Routes)**
 
-| Route                      | Method | Description                                         |
-| -------------------------- | ------ | --------------------------------------------------- |
-| `/api/auth/register`       | POST   | Create account, return tokens                       |
-| `/api/auth/login`          | POST   | Authenticate user                                   |
-| `/api/auth/oauth2`         | POST   | Authenticate user with Google and Microsoft account |
-| `/api/auth/reset-password` | POST   | Reset the account password                          |
-| `/api/auth/activate`       | POST   | Account verification                                |
-| `/api/auth/refreshToken`   | POST   | Refresh access token                                |
-| `/api/auth/me`             | GET    | Get user info                                       |
-| `/api/itinerary`           | POST   | Create new itinerary                                |
-| `/api/itineraries`         | GET    | Get user itineraries                                |
-| `/api/search-flights`      | GET    | Fetch flights under budget                          |
-| `/api/generate-pdf`        | GET    | Generate itinerary PDF                              |
+| Route                      | Method                | Description                           |
+| -------------------------- | --------------------- | ------------------------------------- |
+| `/api/auth/register`       | POST                  | Create account, return tokens         |
+| `/api/auth/login`          | POST                  | Authenticate user                     |
+| `/api/auth/oauth-google`   | POST                  | Authenticate user with Google account |
+| `/api/auth/reset-password` | POST                  | Reset the account password            |
+| `/api/auth/activate`       | POST                  | Account verification                  |
+| `/api/auth/refresh-token`  | POST                  | Refresh access token                  |
+| `/api/auth/me`             | GET                   | Get user info                                         |
+| `/api/trips`               | POST GET PATCH DELETE | Full CRUD endpoint                    |
+| `/api/amadeus/search`      | GET                   | Fetch flights under budget            |
+| `/api/pdf/export/:tripId`  | GET                   | Generate trip PDF                     |
 
 ---
 
@@ -114,47 +113,105 @@ External APIs (Amadeus, Google Maps)
 
 ```js
 {
-  _id: ObjectId,
-  firstName: String,
-  lastName: String,
-  email: String,
-  password: String,
-  oauthProvider:String,
-  oauthUid:String,
-  oauthPicture:String,
-  isOauth:Boolean,
-  passwordResetToken:String,
-  isActive:Boolean,
-  createdAt: Date,
-  updateAt:Date
+  _id: string;
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  oauthProvider: string;
+  oauthUid: string;
+  oauthPicture: string;
+  isOauth: boolean;
+  passwordResetToken: string;
+  activationToken: string;
+  isActive: boolean;
+  isAdmin: false;
+  createdAt: Date;
+  updatedAt: Date;
 }
 ```
 
-#### **Itinerary Collection**
+#### **Trip Collection**
 
 ```js
-{
-  userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-  tripName: { type: String, required: true },
-  destination: String,
-  cityCode: String,
-  startDate: Date,
-  endDate: Date,
-  budget: { type: Number, min: 0, default: 0 },
-  days: [daySchema],
-  markers: [markerSchema],
+ Event {
+  _id: string;
+  kind: ["flight", "hotel", "activity", "dining", "transport"];
+  title: string;
+  startTime: Date;
+  endTime: Date;
+  cost: number;
+  location: {
+    lat: number,
+    lng: number,
+    address: string,
+  };
+  meta: unknown;
+}
+ Day  {
+  _id: string;
+  date: Date;
+  events: [Event];
+}
+
+Marker {
+  _id: string;
+  lat: number;
+  lng: number;
+  label: string;
+}
+
+ Trip  {
+  _id: string;
+  userId: string;
+  tripName: string;
+  origin: string;
+  originCityCode: String;
+  destination: String;
+  destinationCityCode: String;
+  startDate: Date;
+  endDate: Date;
+  budget: number;
+  days: [Day];
+  markers: [Marker];
   preferences: {
-    flexibleDates: { type: Boolean, default: false },
-    maxStops: { type: Number, default: 2 }
-  },
-  flightOptions: [Schema.Types.Mixed],
-  hotelOptions: [Schema.Types.Mixed],
+    flexibleDates: boolean,
+    maxStops: number,
+  };
+  flightOptions: [unknown];
+  hotelOptions: [unknown];
   notifications: {
-    priceDrop: { type: Boolean, default: true },
-    email: { type: Boolean, default: true }
-  },
-  collaborators: [{ type: Schema.Types.ObjectId, ref: 'User' }],
-  createdAt: { type: Date, default: Date.now }
+    priceDrop: boolean,
+    email: boolean,
+  };
+  collaborators: [string];
+  createdAt: Date;
+}
+```
+
+#### **Mailing Collection**
+
+```js
+EmailAddress{
+  name: string;
+  email: string;
+}
+Attachment{
+  filename: string;
+  path?: string; // file path on disk
+  content?: Buffer | string; // inline file content
+  contentType?: string; // optional MIME type
+}
+EmailBox{
+  _id: string;
+  from?: EmailAddress;
+  to: EmailAddress | EmailAddress[];
+  cc?: EmailAddress | EmailAddress[];
+  bcc?: EmailAddress | EmailAddress[];
+  subject: string;
+  content: string;
+  attachments?: Attachment[];
+  sent?: boolean;
 }
 ```
 
