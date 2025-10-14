@@ -146,7 +146,7 @@ class AmadeusController {
         departureDate: startDate,
         returnDate: endDate,
         adults: "1",
-        max: 12,
+        max: 7,
         currencyCode: "USD",
       });
       const flights = flightsResp.data || [];

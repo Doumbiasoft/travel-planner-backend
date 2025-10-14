@@ -5,6 +5,7 @@ import {
   handleDeleteEmailsSentCron,
   handleEmailCron,
 } from "../services/mailbox.service";
+import { checkPricesForAllTrips } from "../services/priceChecker.service";
 
 let sendingEmails = false;
 let deletingEmails = false;
@@ -31,6 +32,13 @@ export const setupCronJobs = () => {
     } catch (error) {
     } finally {
       deletingEmails = false;
+    }
+  });
+  cron.schedule(CronExpression.everySixHours(), async () => {
+    try {
+      await checkPricesForAllTrips();
+    } catch (error: any) {
+      logger.error("Price checker cron job failed:", error.message);
     }
   });
 };
