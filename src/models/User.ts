@@ -14,7 +14,7 @@ export interface User extends Document {
   passwordResetToken: string;
   activationToken: string;
   isActive: boolean;
-  isAdmin: false;
+  isAdmin: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
