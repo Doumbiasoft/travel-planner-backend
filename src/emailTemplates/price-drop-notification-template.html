@@ -8,7 +8,7 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f4f6f8;
+            background-color: #f4f6f8 !important;
             margin: 0;
             padding: 0;
             justify-content: center;
@@ -16,11 +16,12 @@
 
         .logo {
             width: auto !important;
+            width: 80px !important;
         }
 
         .email-container {
             max-width: 600px;
-            background-color: #f0f0f0;
+            background-color: #f0f0f0 !important;
             display: block;
             margin-left: auto;
             margin-right: auto;
@@ -35,6 +36,11 @@
             padding: 20px;
             text-align: center;
             color: white !important;
+            display: flex;
+            gap: 2;
+            align-items: center;
+            justify-content: center;
+
         }
 
         [data-ogsc] .email-header {
@@ -48,24 +54,24 @@
 
         .email-body {
             padding: 20px;
-            color: #333333;
+            color: #333333 !important;
         }
 
         .email-body h1 {
             font-size: 20px;
-            color: #333333;
+            color: #333333 !important;
         }
 
         .email-body p {
             font-size: 14px;
             line-height: 1.6;
-            color: #333333;
+            color: #333333 !important;
         }
 
         ul {
             font-size: 14px;
             line-height: 1.6;
-            color: #333333;
+            color: #333333 !important;
             margin: 0;
             padding: 0;
             display: flex;
@@ -77,7 +83,7 @@
         tr {
             font-size: 14px;
             line-height: 1.6;
-            color: #333333;
+            color: #333333 !important;
             margin: 0;
             padding: 0;
             display: flex;
@@ -93,8 +99,9 @@
         .button {
             display: inline-block;
             padding: 10px 20px;
-            color: #ffff;
-            background-color: #fbe567;
+            color: #373737 !important;
+            background-color: #eed12d !important;
+            font-weight: bold;
             border-radius: 5px;
             text-decoration: none;
             font-size: 14px;
@@ -104,11 +111,11 @@
         }
 
         .button a {
-            color: #ffff;
+            color: #373737 !important;
         }
 
         .button:hover {
-            background-color: #ebd65f;
+            background-color: #ebd65f !important;
         }
 
         .related-resources {
@@ -118,7 +125,7 @@
         }
 
         .related-resources a {
-            color: #0073bb;
+            color: #eed12d;
             text-decoration: none;
             font-size: 14px;
         }
@@ -168,8 +175,9 @@
 <body>
     <div class="email-container">
         <div class="email-header">
-            <img class="logo" src="https://drive.google.com/thumbnail?id=1rt-rm9wvwJQgT2A_7w3CNB05Vn4eXUe7&sz"
+            <img class="logo" src="https://drive.google.com/thumbnail?id=1W2VAyE6AiCSv5PKvQsa4sxhImyO5yvbX&sz"
                 alt="Travel Planner Logo">
+            <span style="font-size: 35px !important;">Travel Planner</span>
         </div>
         <div class="email-body">
             <h2 style="color: #f2d530;">Great News! Prices Have Dropped!</h2>
@@ -231,16 +239,19 @@
                     <tr>
                         <td>
                             <img class="icon" src="https://img.icons8.com/color/16/000000/linkedin.png" alt="LinkedIn">
-                            LinkedIn - <a href="#" target="_blank">link</a>
+                            LinkedIn - <a rel="noopener" href="https://www.linkedin.com/in/doumbiamouhamed/"
+                                target="_blank">https://www.linkedin.com/in/doumbiamouhamed/</a>
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            <img class="icon" src="https://img.icons8.com/color/16/000000/instagram-new.png"
-                                alt="Instagram">
-                            GitHub - <a href="#" target="_blank">link</a>
+                            <img class="icon" src="https://img.icons8.com/?size=100&id=62856&format=png&color=000000"
+                                alt="Github">
+                            GitHub - <a href="https://github.com/doumbiasoft" rel="noopener"
+                                target="_blank">https://github.com/doumbiasoft</a>
                         </td>
                     </tr>
+
                 </table>
             </div>
         </div>

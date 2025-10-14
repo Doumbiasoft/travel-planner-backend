@@ -315,7 +315,7 @@ class AuthController {
     }
   }
 
-  @Post("/reset-password")
+  @Post("/forgot-password")
   @Use(
     endpointMetadata({
       summary: "Reset password",
@@ -354,7 +354,7 @@ class AuthController {
         .replaceAll("%Name%", name)
         .replace(
           "%Link%",
-          `${ENV.CLIENT_URL}/account/reset-password/${passwordResetToken}`
+          `${ENV.CLIENT_URL}/forgot-password/${passwordResetToken}`
         );
       const resetPasswordEmail: Partial<EmailBox> = {
         to: { name: name, email: email },
