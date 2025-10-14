@@ -347,7 +347,9 @@ class AuthController {
       let template: any = await readEmailTemplateContent(
         ACCOUNT_PASSWORD_RESET_TEMPLATE
       );
-      const passwordResetToken = jwt.sign({ _id: user._id }, ENV.JWT_SECRET);
+      const passwordResetToken = jwt.sign({ _id: user._id }, ENV.JWT_SECRET, {
+        expiresIn: "15m",
+      });
       user.passwordResetToken = passwordResetToken;
       await user.save({ validateBeforeSave: false });
       const name = user.firstName.toString().split(" ")[0];
@@ -444,6 +446,12 @@ class AuthController {
     try {
       if (!passwordResetToken || !password)
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
+
+      try {
+        await jwt.verify(passwordResetToken, ENV.JWT_SECRET);
+      } catch (err) {
+        return sendError(res, "Token expired", HttpStatus.UNAUTHORIZED);
+      }
 
       const currentUser = await findUserByPasswordResetToken(
         passwordResetToken
