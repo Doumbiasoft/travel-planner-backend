@@ -26,6 +26,7 @@ import {
   findUser,
   findUserById,
   findUserByIdWithoutPassword,
+  findUserByPasswordResetToken,
   updateUserByActivationToken,
   updateUserById,
 } from "../../services/user.service";
@@ -424,10 +425,9 @@ class AuthController {
     validateBody({
       rules: [
         {
-          field: "email",
+          field: "passwordResetToken",
           required: true,
           type: "string",
-          pattern: ValidationPatterns.EMAIL,
         },
         {
           field: "password",
@@ -439,13 +439,15 @@ class AuthController {
     logRequest()
   )
   async changePassword(@Req req: Request, @Res res: Response) {
-    const { email, password } = req.body;
+    const { passwordResetToken, password } = req.body;
 
     try {
-      if (!email || !password)
+      if (!passwordResetToken || !password)
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
 
-      const currentUser = await findUser(email, true);
+      const currentUser = await findUserByPasswordResetToken(
+        passwordResetToken
+      );
       if (!currentUser) {
         return sendError(res, "User not found", HttpStatus.NOT_FOUND);
       }

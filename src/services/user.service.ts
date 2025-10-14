@@ -20,6 +20,9 @@ export const findUserById = async (userId: string) => {
 export const findUserByIdWithoutPassword = async (userId: string) => {
   return await UserModel.findById({ _id: userId }).select("-password");
 };
+export const findUserByPasswordResetToken = async (token: string) => {
+  return await UserModel.findOne({ passwordResetToken: token });
+};
 export const createUser = async (user: Partial<User>) => {
   return await UserModel.create(user);
 };
