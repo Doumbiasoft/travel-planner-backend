@@ -609,7 +609,7 @@ class AuthController {
         },
         {
           field: "lastName",
-          required: true,
+          required: false,
           type: "string",
           minLength: 3,
           maxLength: 50,
@@ -640,24 +640,9 @@ class AuthController {
     logRequest()
   )
   async oauthGoogle(@Req req: Request, @Res res: Response) {
-    /** const user = {
-              firstName: credentialResponse.given_name,
-              lastName: credentialResponse.family_name,
-              email: credentialResponse.email,
-              oauthUid: credentialResponse.id,
-              oauthPicture: credentialResponse.picture
-            }; */
-    const { firstName, lastName, email, password, oauthUid, oauthPicture } =
-      req.body;
+    const { firstName, lastName, email, oauthUid, oauthPicture } = req.body;
     try {
-      if (
-        !firstName ||
-        !lastName ||
-        !email ||
-        !password ||
-        !oauthUid ||
-        !oauthPicture
-      )
+      if (!firstName || !email || !oauthUid || !oauthPicture)
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
 
       let user = await findUser(email, true);
