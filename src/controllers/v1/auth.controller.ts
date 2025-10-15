@@ -159,15 +159,31 @@ class AuthController {
     const { email, password } = req.body;
 
     try {
-      if (!email || !password)
+      if (!email || !password) {
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
+      }
 
-      const user = await findUser(email, true);
-      if (!user)
+      const user = await findUser(email);
+      if (!user) {
         return sendError(res, "Invalid credentials", HttpStatus.UNAUTHORIZED);
+      }
+
+      // Check if account is active
+      if (!user.isActive) {
+        return sendError(
+          res,
+          "Account not activated. Please check your email for activation link.",
+          HttpStatus.UNAUTHORIZED
+        );
+      }
+
+      if (!user.password || user.password === "") {
+        return sendError(res, "Invalid credentials", HttpStatus.UNAUTHORIZED);
+      }
       const match = await bcrypt.compare(password, user.password);
-      if (!match)
+      if (!match) {
         return sendError(res, "Invalid credentials", HttpStatus.UNAUTHORIZED);
+      }
 
       const accessToken = jwt.sign({ _id: user._id }, ENV.JWT_SECRET, {
         expiresIn: "15m",
