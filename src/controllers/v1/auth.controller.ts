@@ -96,7 +96,7 @@ class AuthController {
       if (existUser) {
         return sendError(
           res,
-          "This email address 'doumbiasoft@gmail.com' is already in use. Please choose a different email",
+          `This email address '${email}' is already in use. Please choose a different email`,
           HttpStatus.CONFLICT
         );
       }
