@@ -92,6 +92,15 @@ class AuthController {
       if (!firstName || !lastName || !email || !password)
         return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
 
+      const existUser = await findUser(email);
+      if (existUser) {
+        return sendError(
+          res,
+          "This email address 'doumbiasoft@gmail.com' is already in use. Please choose a different email",
+          HttpStatus.CONFLICT
+        );
+      }
+
       const hash = await bcrypt.hash(password, 10);
 
       const data: Partial<User> = {
