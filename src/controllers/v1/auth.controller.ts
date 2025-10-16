@@ -362,7 +362,7 @@ class AuthController {
         return sendError(res, "Missing email field", HttpStatus.BAD_REQUEST);
       const user = await findUser(email, true);
       if (!user)
-        return sendError(res, "Account not found", HttpStatus.UNAUTHORIZED);
+        return sendError(res, "Email not found", HttpStatus.UNAUTHORIZED);
 
       let template: any = await readEmailTemplateContent(
         ACCOUNT_PASSWORD_RESET_TEMPLATE
@@ -377,11 +377,11 @@ class AuthController {
         .replaceAll("%Name%", name)
         .replace(
           "%Link%",
-          `${ENV.CLIENT_URL}/forgot-password/${passwordResetToken}`
+          `${ENV.CLIENT_URL}/account/change-password/${passwordResetToken}`
         );
       const resetPasswordEmail: Partial<EmailBox> = {
         to: { name: name, email: email },
-        subject: "🔁 🔒 Reset Password!",
+        subject: "🔁 🔑 Reset Your Account Password!",
         content: template,
       };
 
@@ -493,6 +493,50 @@ class AuthController {
       return sendError(res, err.message, HttpStatus.BAD_REQUEST);
     }
   }
+
+  @Post("/change-password-token-validation")
+  @Use(
+    endpointMetadata({
+      summary: "Check Token Validity",
+      description: "Check if the token has not expired",
+    }),
+    validateBody({
+      rules: [
+        {
+          field: "passwordResetToken",
+          required: true,
+          type: "string",
+        },
+      ],
+    }),
+    logRequest()
+  )
+  async changePasswordTokenValidation(@Req req: Request, @Res res: Response) {
+    const { passwordResetToken } = req.body;
+
+    try {
+      if (!passwordResetToken)
+        return sendError(res, "Token missing", HttpStatus.BAD_REQUEST);
+
+      try {
+        await jwt.verify(passwordResetToken, ENV.JWT_SECRET);
+      } catch (err) {
+        return sendError(res, "Token expired", HttpStatus.UNAUTHORIZED);
+      }
+
+      const currentUser = await findUserByPasswordResetToken(
+        passwordResetToken
+      );
+      if (!currentUser) {
+        return sendError(res, "Expired Link", HttpStatus.NOT_FOUND);
+      }
+
+      return sendResponse(res, { ok: true }, "Valid Token", HttpStatus.CREATED);
+    } catch (err: any) {
+      return sendError(res, err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @Patch("/update-profile")
   @Use(
     authMiddleware,
