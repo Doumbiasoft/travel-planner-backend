@@ -27,16 +27,16 @@ const emailBoxSchema = new Schema(
   {
     from: {
       type: {
-        name: { type: String, require: true },
-        email: { type: String, require: true },
+        name: { type: String, required: true },
+        email: { type: String, required: true },
       },
       require: false,
     },
     to: {
       type: [
         {
-          name: { type: String, require: true },
-          email: { type: String, require: true },
+          name: { type: String, required: true },
+          email: { type: String, required: true },
         },
       ],
       require: true,
@@ -44,8 +44,8 @@ const emailBoxSchema = new Schema(
     cc: {
       type: [
         {
-          name: { type: String, require: true },
-          email: { type: String, require: true },
+          name: { type: String, required: true },
+          email: { type: String, required: true },
         },
       ],
       require: false,
@@ -53,26 +53,26 @@ const emailBoxSchema = new Schema(
     bcc: {
       type: [
         {
-          name: { type: String, require: true },
-          email: { type: String, require: true },
+          name: { type: String, required: true },
+          email: { type: String, required: true },
         },
       ],
       require: false,
     },
-    subject: { type: String, require: true },
-    content: { type: String, require: true },
+    subject: { type: String, required: true },
+    content: { type: String, required: true },
     attachments: {
       type: [
         {
-          filename: { type: String, require: true },
-          path: { type: String, require: false },
-          content: { type: String, require: false },
-          contentType: { type: String, require: false },
+          filename: { type: String, required: true },
+          path: { type: String, required: false },
+          content: { type: String, required: false },
+          contentType: { type: String, required: false },
         },
       ],
       require: false,
     },
-    sent: { type: Boolean, require: true, default: false },
+    sent: { type: Boolean, required: true, default: false },
   },
   { timestamps: true }
 );

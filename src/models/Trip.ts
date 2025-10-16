@@ -52,6 +52,7 @@ export interface Trip extends Document {
   };
   collaborators: [string];
   createdAt: Date;
+  updatedAt: Date;
 }
 export type Trips = Trip[];
 
@@ -61,14 +62,14 @@ const eventSchema = new Schema({
     enum: ["flight", "hotel", "activity", "dining", "transport"],
     required: true,
   },
-  title: String,
-  startTime: Date,
-  endTime: Date,
+  title: { type: String, required: true },
+  startTime: { type: Date, required: false },
+  endTime: { type: Date, required: false },
   cost: { type: Number, default: 0 },
   location: {
-    lat: Number,
-    lng: Number,
-    address: String,
+    lat: { type: Number, required: true },
+    lng: { type: Number, required: true },
+    address: { type: String, required: true },
   },
   meta: Schema.Types.Mixed,
 });
@@ -89,7 +90,7 @@ const itinerarySchema = new Schema(
     userId: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      require: true,
+      required: true,
       validate: {
         validator: async function (userId: Schema.Types.ObjectId) {
           // Query the database to see if the user exists
@@ -103,12 +104,12 @@ const itinerarySchema = new Schema(
     },
 
     tripName: { type: String, required: true },
-    origin: String,
-    originCityCode: String,
-    destination: String,
-    destinationCityCode: String,
-    startDate: Date,
-    endDate: Date,
+    origin: { type: String, required: true },
+    originCityCode: { type: String, required: true },
+    destination: { type: String, required: true },
+    destinationCityCode: { type: String, required: true },
+    startDate: { type: Date, required: true },
+    endDate: { type: Date, required: true },
     budget: { type: Number, min: 0, default: 0 },
     days: [daySchema],
     markers: [markerSchema],
@@ -123,7 +124,6 @@ const itinerarySchema = new Schema(
       email: { type: Boolean, default: true },
     },
     collaborators: [{ type: Schema.Types.ObjectId, ref: "User" }],
-    createdAt: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
