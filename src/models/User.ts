@@ -67,7 +67,7 @@ const userSchema = new Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: false,
       default: "",
     },
     oauthProvider: {

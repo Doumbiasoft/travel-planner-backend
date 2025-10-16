@@ -115,7 +115,7 @@ class AuthController {
         ENV.JWT_SECRET
       );
       user.activationToken = accountActivationToken;
-      await user.save();
+      await user.save({ validateBeforeSave: false });
 
       const name = firstName.toString().split(" ")[0];
       template = template
