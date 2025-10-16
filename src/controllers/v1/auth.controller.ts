@@ -126,7 +126,7 @@ class AuthController {
         );
       const activationEmail: Partial<EmailBox> = {
         to: { name: name, email: email },
-        subject: "✅ Account Activation !",
+        subject: "✅ Activate Your Travel Planner Account",
         content: template,
       };
 
@@ -323,12 +323,7 @@ class AuthController {
         activationToken: "",
         isActive: true,
       });
-      if (!user)
-        return sendError(
-          res,
-          "Activation token expired",
-          HttpStatus.UNAUTHORIZED
-        );
+      if (!user) return sendError(res, "Expired link", HttpStatus.UNAUTHORIZED);
 
       return sendResponse(
         res,
