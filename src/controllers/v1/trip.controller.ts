@@ -266,8 +266,10 @@ class TripController {
     const {
       tripId,
       tripName,
+      origin,
+      originCityCode,
       destination,
-      cityCode,
+      destinationCityCode,
       startDate,
       endDate,
       budget,
@@ -277,8 +279,10 @@ class TripController {
       if (
         !tripId ||
         !tripName ||
+        !origin ||
+        !originCityCode ||
         !destination ||
-        !cityCode ||
+        !destinationCityCode ||
         !startDate ||
         !endDate ||
         !budget
