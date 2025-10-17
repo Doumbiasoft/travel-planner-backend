@@ -75,11 +75,10 @@ class TripController {
     if (!req.user?._id) {
       return sendError(res, "Unauthorized", HttpStatus.UNAUTHORIZED);
     }
-    const id = req.params.itineraryId;
-    const trip = await findTripByIdAndUserId(id, req.user._id);
+    const trip = await findTripByIdAndUserId(req.params.id, req.user._id);
     return sendResponse(
       res,
-      { trip: trip },
+      trip,
       "Fetched a trip successfully",
       HttpStatus.OK
     );

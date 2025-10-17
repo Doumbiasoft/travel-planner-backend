@@ -94,6 +94,9 @@ export const comparePrices = (
   };
 };
 
+// Move the flag outside the function to persist across calls
+let checkingPrices = false;
+
 export const sendPriceDropNotification = async (
   user: any,
   trip: any,
@@ -150,8 +153,6 @@ export const sendPriceDropNotification = async (
 };
 
 export const checkPricesForAllTrips = async () => {
-  let checkingPrices = false;
-
   if (checkingPrices) {
     logger.warn("Price checker skipped: previous job still running");
     return;

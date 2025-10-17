@@ -77,9 +77,10 @@ export const scoreFlight = (flight: Flight, budget: number = 1000): FlightScore 
 
 export const scoreHotel = (hotel: Hotel, budget: number = 1000): HotelScore => {
   const price = Number(
-    hotel?.offers?.[0]?.price?.total || hotel.price || 1_000_000
+    hotel?.offers?.[0]?.price?.total || hotel.price || 0
   );
-  const priceScore = Math.max(0, 1 - price / (budget || price + 1));
+  // If no price available, give it a very low score instead of high price
+  const priceScore = price > 0 ? Math.max(0, 1 - price / (budget || price + 1)) : 0;
   const rating = Number(hotel?.hotel?.rating || hotel.rating || 0);
   const ratingScore = Math.max(0, Math.min(1, rating / 5));
   const score = priceScore * 0.6 + ratingScore * 0.4;

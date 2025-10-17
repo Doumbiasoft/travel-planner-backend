@@ -126,7 +126,7 @@ class AmadeusController {
       destinationCityCode,
       startDate,
       endDate,
-      budget = "1000",
+      budget,
       tripId,
     } = req.query;
 
