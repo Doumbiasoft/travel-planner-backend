@@ -47,7 +47,7 @@ class TripController {
     const trips = await findAllTripsByUserId(req.user._id);
     return sendResponse(
       res,
-      { trips: trips },
+      trips,
       "Fetched all trips for a user successfully",
       HttpStatus.OK
     );
@@ -132,7 +132,7 @@ class TripController {
         {
           field: "budget",
           required: true,
-          type: "string",
+          type: "number",
         },
         {
           field: "markers",
@@ -182,6 +182,7 @@ class TripController {
         HttpStatus.CREATED
       );
     } catch (err: any) {
+      console.log(err);
       return sendError(res, err.message, HttpStatus.BAD_REQUEST);
     }
   }
@@ -192,6 +193,15 @@ class TripController {
     endpointMetadata({
       summary: "Update a trip",
       description: "Update a trip for a user",
+    }),
+    validateParams({
+      rules: [
+        {
+          field: "id",
+          required: true,
+          type: "string",
+        },
+      ],
     }),
     validateBody({
       rules: [
@@ -206,12 +216,22 @@ class TripController {
           type: "string",
         },
         {
+          field: "origin",
+          required: false,
+          type: "string",
+        },
+        {
+          field: "originCityCode",
+          required: false,
+          type: "string",
+        },
+        {
           field: "destination",
           required: false,
           type: "string",
         },
         {
-          field: "cityCode",
+          field: "destinationCityCode",
           required: false,
           type: "string",
         },
@@ -227,8 +247,8 @@ class TripController {
         },
         {
           field: "budget",
-          required: false,
-          type: "string",
+          required: true,
+          type: "number",
         },
         {
           field: "markers",
