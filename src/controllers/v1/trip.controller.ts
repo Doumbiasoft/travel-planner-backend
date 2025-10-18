@@ -138,6 +138,11 @@ class TripController {
           required: false,
           type: "array",
         },
+        {
+          field: "notifications",
+          required: false,
+          type: "object",
+        },
       ],
     }),
     logRequest()
@@ -253,6 +258,11 @@ class TripController {
           field: "markers",
           required: false,
           type: "array",
+        },
+        {
+          field: "notifications",
+          required: false,
+          type: "object",
         },
       ],
     }),
