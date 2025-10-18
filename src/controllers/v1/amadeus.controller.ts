@@ -139,6 +139,75 @@ class AmadeusController {
     ) {
       return sendError(res, "Keyword are required", HttpStatus.BAD_REQUEST);
     }
+
+    // Validate dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const departure = new Date(startDate as string);
+    const returnDate = new Date(endDate as string);
+
+    // Check if departure is in the past
+    if (departure < today) {
+      if (tripId) {
+        await Trip.findByIdAndUpdate(tripId, {
+          $set: {
+            validationStatus: {
+              isValid: false,
+              reason: `Departure date (${departure.toISOString().split("T")[0]}) is in the past`,
+              lastChecked: new Date(),
+            },
+          },
+        });
+      }
+      return sendError(
+        res,
+        "Departure date cannot be in the past",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    // Check if departure is too soon (Amadeus requires at least 1 day notice)
+    const minDeparture = new Date(today);
+    minDeparture.setDate(minDeparture.getDate() + 1);
+    if (departure < minDeparture) {
+      if (tripId) {
+        await Trip.findByIdAndUpdate(tripId, {
+          $set: {
+            validationStatus: {
+              isValid: false,
+              reason: `Departure date (${departure.toISOString().split("T")[0]}) is too soon. Flights must be booked at least 1 day in advance`,
+              lastChecked: new Date(),
+            },
+          },
+        });
+      }
+      return sendError(
+        res,
+        "Departure date must be at least 1 day in the future",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    // Check if return date is before departure
+    if (returnDate <= departure) {
+      if (tripId) {
+        await Trip.findByIdAndUpdate(tripId, {
+          $set: {
+            validationStatus: {
+              isValid: false,
+              reason: "Return date must be after departure date",
+              lastChecked: new Date(),
+            },
+          },
+        });
+      }
+      return sendError(
+        res,
+        "Return date must be after departure date",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
     try {
       const flightsResp = await amadeus.shopping.flightOffersSearch.get({
         originLocationCode: originCityCode,
@@ -194,6 +263,11 @@ class AmadeusController {
           $set: {
             flightOptions: flights.slice(0, 6),
             hotelOptions: hotels.slice(0, 6),
+            validationStatus: {
+              isValid: true,
+              reason: null,
+              lastChecked: new Date(),
+            },
           },
         });
       }

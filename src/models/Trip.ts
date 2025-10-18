@@ -50,6 +50,11 @@ export interface Trip extends Document {
     priceDrop: boolean;
     email: boolean;
   };
+  validationStatus: {
+    isValid: boolean;
+    reason: string | null;
+    lastChecked: Date | null;
+  };
   collaborators: [string];
   createdAt: Date;
   updatedAt: Date;
@@ -122,6 +127,11 @@ const itinerarySchema = new Schema(
     notifications: {
       priceDrop: { type: Boolean, default: true },
       email: { type: Boolean, default: true },
+    },
+    validationStatus: {
+      isValid: { type: Boolean, default: true },
+      reason: { type: String, default: null },
+      lastChecked: { type: Date, default: null },
     },
     collaborators: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },

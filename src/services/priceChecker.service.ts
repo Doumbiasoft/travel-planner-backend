@@ -42,6 +42,74 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
       !trip.endDate
     ) {
       logger.warn(`Trip ${trip._id} missing required fields for price check`);
+      await Trip.findByIdAndUpdate(trip._id, {
+        $set: {
+          validationStatus: {
+            isValid: false,
+            reason: "Missing required fields (origin, destination, or dates)",
+            lastChecked: new Date(),
+          },
+        },
+      });
+      return null;
+    }
+
+    // Validate dates before calling Amadeus
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const departure = new Date(trip.startDate);
+    const returnDate = new Date(trip.endDate);
+
+    // Check if departure is in the past
+    if (departure < today) {
+      logger.warn(
+        `Trip ${trip._id} (${trip.tripName}) has departure date in the past (${departure.toISOString().split("T")[0]}), skipping price check`
+      );
+      await Trip.findByIdAndUpdate(trip._id, {
+        $set: {
+          validationStatus: {
+            isValid: false,
+            reason: `Departure date (${departure.toISOString().split("T")[0]}) is in the past`,
+            lastChecked: new Date(),
+          },
+        },
+      });
+      return null;
+    }
+
+    // Check if return date has passed
+    if (returnDate < today) {
+      logger.warn(
+        `Trip ${trip._id} (${trip.tripName}) has return date in the past (${returnDate.toISOString().split("T")[0]}), skipping price check`
+      );
+      await Trip.findByIdAndUpdate(trip._id, {
+        $set: {
+          validationStatus: {
+            isValid: false,
+            reason: `Return date (${returnDate.toISOString().split("T")[0]}) is in the past`,
+            lastChecked: new Date(),
+          },
+        },
+      });
+      return null;
+    }
+
+    // Check if departure is too soon (Amadeus requires at least 1 day notice)
+    const minDeparture = new Date(today);
+    minDeparture.setDate(minDeparture.getDate() + 1);
+    if (departure < minDeparture) {
+      logger.warn(
+        `Trip ${trip._id} (${trip.tripName}) departs too soon (${departure.toISOString().split("T")[0]}), Amadeus requires at least 1 day notice, skipping price check`
+      );
+      await Trip.findByIdAndUpdate(trip._id, {
+        $set: {
+          validationStatus: {
+            isValid: false,
+            reason: `Departure date (${departure.toISOString().split("T")[0]}) is too soon. Flights must be booked at least 1 day in advance`,
+            lastChecked: new Date(),
+          },
+        },
+      });
       return null;
     }
 
@@ -55,9 +123,29 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
       currencyCode: "USD",
     });
 
+    // If successful, mark as valid
+    await Trip.findByIdAndUpdate(trip._id, {
+      $set: {
+        validationStatus: {
+          isValid: true,
+          reason: null,
+          lastChecked: new Date(),
+        },
+      },
+    });
+
     return response.data || [];
   } catch (error: any) {
     logger.error(`Failed to fetch prices for trip ${trip._id}:`, error.message);
+    await Trip.findByIdAndUpdate(trip._id, {
+      $set: {
+        validationStatus: {
+          isValid: false,
+          reason: `API error: ${error.message}`,
+          lastChecked: new Date(),
+        },
+      },
+    });
     return null;
   }
 };
