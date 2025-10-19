@@ -601,6 +601,68 @@ class AuthController {
     }
   }
 
+  @Patch("/update-password")
+  @Use(
+    authMiddleware,
+    endpointMetadata({
+      summary: "Update password",
+      description:
+        "Update current user password by verifying current password and setting new password",
+    }),
+    validateBody({
+      rules: [
+        {
+          field: "currentPassword",
+          required: true,
+          type: "string",
+        },
+        {
+          field: "newPassword",
+          required: true,
+          type: "string",
+        },
+      ],
+    }),
+    logRequest()
+  )
+  async updatePassword(@Req req: Request, @Res res: Response) {
+    const { currentPassword, newPassword } = req.body;
+
+    try {
+      if (!currentPassword || !newPassword)
+        return sendError(res, "Missing fields", HttpStatus.BAD_REQUEST);
+
+      const currentUserId = req.user?._id;
+      if (!currentUserId) {
+        return sendError(res, "Unauthorized", HttpStatus.UNAUTHORIZED);
+      }
+
+      const user = await findUserById(currentUserId);
+      if (!user) {
+        return sendError(res, "Account not found", HttpStatus.UNAUTHORIZED);
+      }
+
+      // Verify current password
+      const match = await bcrypt.compare(currentPassword, user.password);
+      if (!match) {
+        return sendError(res, "Current password is incorrect", HttpStatus.UNAUTHORIZED);
+      }
+
+      // Hash and update new password
+      const hash = await bcrypt.hash(newPassword, 10);
+      await updateUserById(currentUserId, { password: hash });
+
+      return sendResponse(
+        res,
+        { ok: true },
+        "Password updated successfully",
+        HttpStatus.OK
+      );
+    } catch (err: any) {
+      return sendError(res, err.message, HttpStatus.BAD_REQUEST);
+    }
+  }
+
   @Delete("/delete-account")
   @Use(
     authMiddleware,
