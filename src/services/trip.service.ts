@@ -5,10 +5,10 @@ import { sendError } from "../utils/apiResponseFormat";
 import { parseDateString } from "../utils/dateHelper";
 
 export const findAllTrips = async () => {
-  return await TripModel.find();
+  return await TripModel.find().sort({ createdAt: -1 });
 };
 export const findAllTripsByUserId = async (userId: string) => {
-  return await TripModel.find({ userId: userId });
+  return await TripModel.find({ userId: userId }).sort({ createdAt: -1 });
 };
 export const findTripByUserId = async (userId: string) => {
   return await TripModel.findOne({ userId: userId });
