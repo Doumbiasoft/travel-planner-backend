@@ -6,6 +6,7 @@ import { logger } from "../utils/logger";
 import { formatPriceWithSymbol } from "../utils/currency";
 import { readEmailTemplateContent } from "../utils/emailTemplateReader";
 import { PRICE_DROP_NOTIFICATION_TEMPLATE } from "../utils/constantEmailTemplatesNames";
+import { parseDateString, formatDateToString } from "../utils/dateHelper";
 
 interface PriceCheckResult {
   tripId: string;
@@ -57,8 +58,8 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
     // Validate dates before calling Amadeus
     const today = new Date();
     today.setHours(0, 0, 0, 0);
-    const departure = new Date(trip.startDate);
-    const returnDate = new Date(trip.endDate);
+    const departure = parseDateString(trip.startDate);
+    const returnDate = parseDateString(trip.endDate);
 
     // Check if departure is in the past
     if (departure < today) {
@@ -116,8 +117,8 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
     const response = await amadeus.shopping.flightOffersSearch.get({
       originLocationCode: trip.originCityCode,
       destinationLocationCode: trip.destinationCityCode,
-      departureDate: new Date(trip.startDate).toISOString().split("T")[0],
-      returnDate: new Date(trip.endDate).toISOString().split("T")[0],
+      departureDate: formatDateToString(trip.startDate),
+      returnDate: formatDateToString(trip.endDate),
       adults: "1",
       max: 7,
       currencyCode: "USD",
@@ -206,9 +207,9 @@ export const sendPriceDropNotification = async (
     const destination = trip.destination || "N/A";
 
     const dates =
-      new Date(trip.startDate).toLocaleDateString() +
+      parseDateString(trip.startDate).toLocaleDateString() +
       " - " +
-      new Date(trip.endDate).toLocaleDateString();
+      parseDateString(trip.endDate).toLocaleDateString();
 
     const name = user.firstName.toString().split(" ")[0];
     let template: any = await readEmailTemplateContent(
@@ -273,7 +274,8 @@ export const checkPricesForAllTrips = async () => {
       try {
         // Skip if trip end date has passed
         const now = new Date();
-        const tripEndDate = new Date(trip.endDate);
+        now.setHours(0, 0, 0, 0);
+        const tripEndDate = parseDateString(trip.endDate);
         if (tripEndDate < now) {
           logger.info(
             `Trip ${trip._id} (${

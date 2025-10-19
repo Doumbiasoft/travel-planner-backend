@@ -27,6 +27,7 @@ import {
   findTripByIdAndUserId,
   updateTripByIdAndUserId,
   createAMarker,
+  amadeusOffersDateValidation,
 } from "../../services/trip.service";
 
 @Router(buildRoute("v1/trips"))
@@ -140,6 +141,11 @@ class TripController {
         },
         {
           field: "notifications",
+          required: false,
+          type: "object",
+        },
+        {
+          field: "preferences",
           required: false,
           type: "object",
         },
@@ -264,6 +270,11 @@ class TripController {
           required: false,
           type: "object",
         },
+        {
+          field: "preferences",
+          required: false,
+          type: "object",
+        },
       ],
     }),
     logRequest()
@@ -304,6 +315,8 @@ class TripController {
       delete data.tripId;
 
       await updateTripByIdAndUserId(tripId, req.user._id, data);
+
+      await amadeusOffersDateValidation(res, tripId, startDate, endDate);
 
       return sendResponse(
         res,

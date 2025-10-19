@@ -42,7 +42,10 @@ export interface Trip extends Document {
   markers: [Marker];
   preferences: {
     flexibleDates: boolean;
-    maxStops: number;
+    adults: number;
+    children: number;
+    infants: number;
+    travelClass: "ECONOMY" | "PREMIUM_ECONOMY" | "BUSINESS" | "FIRST";
   };
   flightOptions: [unknown];
   hotelOptions: [unknown];
@@ -120,7 +123,14 @@ const itinerarySchema = new Schema(
     markers: [markerSchema],
     preferences: {
       flexibleDates: { type: Boolean, default: false },
-      maxStops: { type: Number, default: 2 },
+      adults: { type: Number, default: 1, min: 1 },
+      children: { type: Number, default: 0, min: 0 },
+      infants: { type: Number, default: 0, min: 0 },
+      travelClass: {
+        type: String,
+        enum: ["ECONOMY", "PREMIUM_ECONOMY", "BUSINESS", "FIRST"],
+        default: "ECONOMY",
+      },
     },
     flightOptions: [Schema.Types.Mixed],
     hotelOptions: [Schema.Types.Mixed],

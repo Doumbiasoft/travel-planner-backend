@@ -12,6 +12,7 @@ import { findBestPackage } from "../../utils/scorer";
 import Trip from "../../models/Trip";
 import { formatPriceWithSymbol } from "../../utils/currency";
 import NodeCache from "node-cache";
+import { amadeusOffersDateValidation } from "../../services/trip.service";
 const cache = new NodeCache({ stdTTL: 3600 }); // 1 hour
 @Router(buildRoute("v1/amadeus"))
 class AmadeusController {
@@ -113,6 +114,26 @@ class AmadeusController {
           required: false,
           type: "string",
         },
+        {
+          field: "adults",
+          required: false,
+          type: "string",
+        },
+        {
+          field: "children",
+          required: false,
+          type: "string",
+        },
+        {
+          field: "infants",
+          required: false,
+          type: "number",
+        },
+        {
+          field: "travelClass",
+          required: false,
+          type: "string",
+        },
       ],
     }),
     logRequest()
@@ -128,6 +149,10 @@ class AmadeusController {
       endDate,
       budget,
       tripId,
+      adults,
+      children,
+      infants,
+      travelClass,
     } = req.query;
 
     if (
@@ -139,85 +164,35 @@ class AmadeusController {
     ) {
       return sendError(res, "Keyword are required", HttpStatus.BAD_REQUEST);
     }
-
-    // Validate dates
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const departure = new Date(startDate as string);
-    const returnDate = new Date(endDate as string);
-
-    // Check if departure is in the past
-    if (departure < today) {
-      if (tripId) {
-        await Trip.findByIdAndUpdate(tripId, {
-          $set: {
-            validationStatus: {
-              isValid: false,
-              reason: `Departure date (${departure.toISOString().split("T")[0]}) is in the past`,
-              lastChecked: new Date(),
-            },
-          },
-        });
-      }
-      return sendError(
-        res,
-        "Departure date cannot be in the past",
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
-    // Check if departure is too soon (Amadeus requires at least 1 day notice)
-    const minDeparture = new Date(today);
-    minDeparture.setDate(minDeparture.getDate() + 1);
-    if (departure < minDeparture) {
-      if (tripId) {
-        await Trip.findByIdAndUpdate(tripId, {
-          $set: {
-            validationStatus: {
-              isValid: false,
-              reason: `Departure date (${departure.toISOString().split("T")[0]}) is too soon. Flights must be booked at least 1 day in advance`,
-              lastChecked: new Date(),
-            },
-          },
-        });
-      }
-      return sendError(
-        res,
-        "Departure date must be at least 1 day in the future",
-        HttpStatus.BAD_REQUEST
-      );
-    }
-
-    // Check if return date is before departure
-    if (returnDate <= departure) {
-      if (tripId) {
-        await Trip.findByIdAndUpdate(tripId, {
-          $set: {
-            validationStatus: {
-              isValid: false,
-              reason: "Return date must be after departure date",
-              lastChecked: new Date(),
-            },
-          },
-        });
-      }
-      return sendError(
-        res,
-        "Return date must be after departure date",
-        HttpStatus.BAD_REQUEST
-      );
-    }
+    // Validate trip dates
+    await amadeusOffersDateValidation(res, tripId, startDate, endDate);
 
     try {
-      const flightsResp = await amadeus.shopping.flightOffersSearch.get({
+      // Prepare flight search parameters
+      const flightSearchParams: any = {
         originLocationCode: originCityCode,
         destinationLocationCode: destinationCityCode,
         departureDate: startDate,
         returnDate: endDate,
-        adults: "1",
+        adults: adults || "1",
         max: 7,
         currencyCode: "USD",
-      });
+      };
+
+      // Add optional parameters if provided
+      if (children && parseInt(children as string) > 0) {
+        flightSearchParams.children = children;
+      }
+      if (infants && parseInt(infants as string) > 0) {
+        flightSearchParams.infants = infants;
+      }
+      if (travelClass) {
+        flightSearchParams.travelClass = travelClass;
+      }
+
+      const flightsResp = await amadeus.shopping.flightOffersSearch.get(
+        flightSearchParams
+      );
       const flights = flightsResp.data || [];
 
       // Get list of hotels in the city first
