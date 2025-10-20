@@ -5,6 +5,7 @@ import { AuthController } from "../../controllers/v1/auth.controller";
 import { TripController } from "../../controllers/v1/trip.controller";
 import { PdfController } from "../../controllers/v1/pdf.controller";
 import { AmadeusController } from "../../controllers/v1/amadeus.controller";
+import { MailboxController } from "../../controllers/v1/mailbox.controller";
 
 /**
  * Register all v1 API controllers with dynamic prefix
@@ -17,5 +18,6 @@ export function registerV1Routes(app: Application, apiPrefix: string): void {
     TripController,
     PdfController,
     AmadeusController,
+    MailboxController,
   ]);
 }

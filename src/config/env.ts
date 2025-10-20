@@ -18,6 +18,8 @@ interface Env {
   JWT_REFRESH_SECRET: string;
   AMADEUS_KEY: string;
   AMADEUS_SECRET: string;
+  CONTACT_NAME: string;
+  CONTACT_EMAIl: string;
 }
 
 export const ENV: Env = {
@@ -37,4 +39,6 @@ export const ENV: Env = {
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "",
   AMADEUS_KEY: process.env.AMADEUS_KEY || "",
   AMADEUS_SECRET: process.env.AMADEUS_SECRET || "",
+  CONTACT_NAME: process.env.CONTACT_NAME || "Mouhamed Doumbia",
+  CONTACT_EMAIl: process.env.CONTACT_EMAIl || "doumbiasoft@gmail.com",
 };

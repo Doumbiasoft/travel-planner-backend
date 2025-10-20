@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Travel Planner Contact Us</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f6f8 !important;
+            margin: 0;
+            padding: 0;
+            justify-content: center;
+        }
+
+        .logo {
+            width: 80px !important;
+        }
+
+        .email-container {
+            max-width: 600px;
+            background-color: #f0f0f0 !important;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .email-header {
+            background-color: #2c2c2c !important;
+            background: #2c2c2c !important;
+            padding: 20px;
+            text-align: center;
+            color: white !important;
+            display: flex;
+            gap: 2;
+            align-items: center;
+            justify-content: center;
+
+        }
+
+        [data-ogsc] .email-header {
+            background-color: #2c2c2c !important;
+            background: #2c2c2c !important;
+        }
+
+        .email-header img {
+            width: 80px;
+        }
+
+        .email-body {
+            padding: 20px;
+            color: #333333 !important;
+        }
+
+        .email-body h1 {
+            font-size: 20px;
+            color: #333333 !important;
+        }
+
+        .email-body p {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333333 !important;
+        }
+
+        ul {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333333 !important;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            justify-items: center;
+        }
+
+        tr {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333333 !important;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            justify-items: center;
+        }
+
+        li {
+            list-style: none;
+        }
+
+        .button {
+            display: inline-block;
+            padding: 10px 20px;
+            color: #373737 !important;
+            background-color: #eed12d !important;
+            font-weight: bold;
+            border-radius: 5px;
+            text-decoration: none;
+            font-size: 14px;
+            margin: 15px 0;
+            justify-content: center;
+            text-align: center;
+        }
+
+        .button a {
+            color: #373737 !important;
+        }
+
+        .button:hover {
+            background-color: #ebd65f !important;
+        }
+
+        .related-resources {
+            margin-top: 20px;
+            padding: 10px 0;
+            border-top: 1px solid #ddd;
+        }
+
+        .related-resources a {
+            color: #eed12d;
+            text-decoration: none;
+            font-size: 14px;
+        }
+
+        .related-resources a:hover {
+            text-decoration: underline;
+        }
+
+        .email-footer {
+            padding: 15px;
+            font-size: 12px;
+            color: #888888;
+            text-align: center;
+            border-top: 1px solid #ddd;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+            border-spacing: 0;
+            font-size: 14px;
+            line-height: 1.6;
+            padding: 0;
+            margin: 0;
+        }
+
+        a {
+            font-size: 14px;
+        }
+
+        pre {
+            font-family: Arial, sans-serif;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .icon {
+            width: 16px;
+            height: 16px;
+            display: inline-block;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="email-container">
+        <div class="email-header">
+            <img class="logo" src="https://drive.google.com/thumbnail?id=1W2VAyE6AiCSv5PKvQsa4sxhImyO5yvbX&sz"
+                alt="Travel Planner Logo">
+            <span style="font-size: 35px !important;">Travel Planner</span>
+        </div>
+        <div class="email-body">
+            <pre><p>%Message%</p></pre>
+            <br>
+            <a href="%Link%" class="button" style="color: white" rel="noopener">Reply</a>
+            <br>
+
+            <div class="related-resources">
+                <p><strong>User's Information</strong>,</p>
+                <table>
+                    <tr>
+                        <td>
+                            <strong>First Name:</strong> %firstName%
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Last Name:</strong> %lastName%
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <strong>Email:</strong> %email%
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="related-resources">
+                <p><strong>Contacts</strong></p>
+                <table>
+                    <tr>
+                        <td>
+                            <img class="icon" src="https://img.icons8.com/color/16/000000/linkedin.png" alt="LinkedIn">
+                            LinkedIn - <a rel="noopener" href="https://www.linkedin.com/in/doumbiamouhamed/"
+                                target="_blank">https://www.linkedin.com/in/doumbiamouhamed/</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <img class="icon" src="https://img.icons8.com/?size=100&id=62856&format=png&color=000000"
+                                alt="Github">
+                            GitHub - <a href="https://github.com/doumbiasoft" rel="noopener"
+                                target="_blank">https://github.com/doumbiasoft</a>
+                        </td>
+                    </tr>
+
+                </table>
+            </div>
+        </div>
+        <div class="email-footer">
+            <p>FIKIA will never email you and ask you to disclose or verify your password, credit card, or
+                banking account number.</p>
+        </div>
+    </div>
+</body>
+
+</html>
