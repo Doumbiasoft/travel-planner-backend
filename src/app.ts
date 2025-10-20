@@ -17,10 +17,10 @@ const app = express();
 app.use(express.json());
 app.use(cookieParser());
 app.use(
-  cors({
+  cors(/*{
     origin: ENV.CLIENT_URL,
     credentials: true,
-  })
+  }*/)
 );
 app.use(compression());
 app.use(morgan("dev"));
