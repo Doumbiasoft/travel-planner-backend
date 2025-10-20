@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { TrigonometryExpressionOperator } from "mongoose";
 dotenv.config();
 
 interface Env {
@@ -18,7 +19,10 @@ interface Env {
   JWT_REFRESH_SECRET: string;
   AMADEUS_KEY: string;
   AMADEUS_SECRET: string;
+  AMADEUS_MODE: string;
   CONTACT_NAME: string;
+  AMADEUS_PROD_KEY: string;
+  AMADEUS_PROD_SECRET: string;
   CONTACT_EMAIl: string;
 }
 
@@ -39,6 +43,9 @@ export const ENV: Env = {
   JWT_REFRESH_SECRET: process.env.JWT_REFRESH_SECRET || "",
   AMADEUS_KEY: process.env.AMADEUS_KEY || "",
   AMADEUS_SECRET: process.env.AMADEUS_SECRET || "",
+  AMADEUS_PROD_KEY: process.env.AMADEUS_PROD_KEY || "",
+  AMADEUS_PROD_SECRET: process.env.AMADEUS_PROD_SECRET || "",
+  AMADEUS_MODE: process.env.AMADEUS_MODE || "development",
   CONTACT_NAME: process.env.CONTACT_NAME || "Mouhamed Doumbia",
   CONTACT_EMAIl: process.env.CONTACT_EMAIl || "doumbiasoft@gmail.com",
 };

@@ -101,9 +101,17 @@ SMTP_PASS=your-email-password
 MAIL_FROM=noreply@travelplanner.com
 MAIL_FROM_NAME=Travel Planner
 
-# Amadeus API
-AMADEUS_KEY=your-amadeus-api-key
-AMADEUS_SECRET=your-amadeus-api-secret
+# Amadeus API Mode (test | production)
+# Controls which Amadeus credentials to use
+AMADEUS_MODE=test
+
+# Amadeus API (Development/Test)
+AMADEUS_KEY=your-amadeus-dev-api-key
+AMADEUS_SECRET=your-amadeus-dev-api-secret
+
+# Amadeus API (Production)
+AMADEUS_PROD_KEY=your-amadeus-prod-api-key
+AMADEUS_PROD_SECRET=your-amadeus-prod-api-secret
 
 # Contact Information
 CONTACT_NAME=Your Name
