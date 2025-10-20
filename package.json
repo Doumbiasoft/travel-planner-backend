@@ -19,7 +19,7 @@
     "@reflet/express": "^2.0.0",
     "@reflet/express-middlewares": "^2.0.0",
     "@reflet/http": "^1.0.0",
-    "@scalar/express-api-reference": "^0.8.21",
+    "@scalar/express-api-reference": "^0.8.18",
     "@types/compression": "^1.8.1",
     "@types/cookie-parser": "^1.4.9",
     "@types/cors": "^2.8.19",
