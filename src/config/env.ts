@@ -45,7 +45,7 @@ export const ENV: Env = {
   AMADEUS_SECRET: process.env.AMADEUS_SECRET || "",
   AMADEUS_PROD_KEY: process.env.AMADEUS_PROD_KEY || "",
   AMADEUS_PROD_SECRET: process.env.AMADEUS_PROD_SECRET || "",
-  AMADEUS_MODE: process.env.AMADEUS_MODE || "test",
+  AMADEUS_MODE: process.env.AMADEUS_MODE || "",
   CONTACT_NAME: process.env.CONTACT_NAME || "Mouhamed Doumbia",
   CONTACT_EMAIl: process.env.CONTACT_EMAIl || "doumbiasoft@gmail.com",
 };
