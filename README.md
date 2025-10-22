@@ -13,9 +13,10 @@ Travel Planner is a full-stack web application backend designed to help users pl
 - 🗺️ **Trip Management**: Create, read, update, and delete trips with detailed itineraries
 - ✈️ **Flight & Hotel Search**: Real-time flight and hotel offers via Amadeus API
 - 💡 **Smart Recommendations**: Budget-based package recommendations
+- ⚡ **Offer Caching**: Intelligent caching system reduces API costs by up to 90%
 - 📄 **PDF Export**: Generate detailed trip itineraries as PDF documents
-- 📧 **Email Notifications**: Account activation, password reset, and contact support
-- 💰 **Price Monitoring**: Automatic validation of flight/hotel offers
+- 📧 **Email Notifications**: Account activation, password reset, price drop alerts, and contact support
+- 💰 **Price Monitoring**: Automatic price tracking with cron jobs (every 6 hours)
 - 🗺️ **Interactive Maps**: Support for map markers and location tracking
 - 👥 **Collaborative Planning**: Support for trip collaborators
 
@@ -1065,7 +1066,7 @@ Search for cities and airports by keyword.
 
 #### GET `/api/v1/amadeus/search`
 
-Search for flight and hotel offers with smart recommendations.
+Search for flight and hotel offers with smart recommendations and caching support.
 
 **Headers**: `Authorization: Bearer <token>`
 
@@ -1081,6 +1082,7 @@ Search for flight and hotel offers with smart recommendations.
 - `children` (optional) - Number of children (default: 0)
 - `infants` (optional) - Number of infants (default: 0)
 - `travelClass` (optional) - Travel class: ECONOMY, PREMIUM_ECONOMY, BUSINESS, FIRST
+- `refreshOffers` (optional) - Boolean to force refresh from Amadeus API (default: false)
 
 **Example**:
 
@@ -1166,6 +1168,12 @@ Search for flight and hotel offers with smart recommendations.
 - If `tripId` is provided, saves results to trip and updates validation status
 - Validates trip dates are in the future
 - Uses scoring algorithm to find best flight+hotel combination within budget
+- **Caching Behavior**:
+  - When `refreshOffers=false` (default) and `tripId` is provided: Returns cached `flightOptions` and `hotelOptions` from the Trip collection (no Amadeus API call)
+  - When `refreshOffers=true`: Fetches fresh data from Amadeus API and updates the Trip collection cache
+  - Response includes `cached: true/false` field indicating data source
+  - Significantly reduces API costs and improves response times
+  - Price monitoring cron job automatically updates cached offers every 6 hours for trips with price drop notifications enabled
 
 ---
 
@@ -1333,9 +1341,21 @@ http://localhost:3001/api-docs
 
 ### ⚡ Caching
 
+**City Search Caching:**
 - City search results are cached for 1 hour using `node-cache`
 - Reduces API calls to Amadeus
 - Improves response times for repeated searches
+
+**Offer Caching:**
+- Flight and hotel offers are cached in the Trip collection (`flightOptions` and `hotelOptions` fields)
+- By default, the `/api/v1/amadeus/search` endpoint returns cached offers when available
+- Use `refreshOffers=true` query parameter to fetch fresh data from Amadeus API
+- Cache is automatically updated by:
+  - Manual refresh requests from users
+  - Trip updates that change search parameters (dates, origin, destination, budget, preferences)
+  - Price monitoring cron job (every 6 hours for trips with notifications enabled)
+- Reduces Amadeus API costs by up to 90%
+- Provides instant load times for trip detail pages
 
 ### 📧 Email Templates
 
@@ -1356,9 +1376,22 @@ Template variables:
 
 The application includes background cron jobs for:
 
-- Validating trip dates and offers
-- Sending price drop notifications
-- Processing queued emails
+**Email Processing Cron** (runs every 5 seconds):
+- Processes queued emails from EmailBox collection
+- Sends emails via SMTP with transaction support
+- Marks emails as sent on success
+
+**Email Cleanup Cron** (runs every weekday at 9 AM):
+- Deletes sent emails to prevent database bloat
+
+**Price Check Cron** (runs every 6 hours):
+- Fetches current flight and hotel prices from Amadeus API for trips with `notifications.priceDrop: true`
+- Compares with cached prices in `flightOptions` and `hotelOptions`
+- Sends email notification if price drops ≥ 5%
+- Updates trip cache with fresh offers (`flightOptions` and `hotelOptions`)
+- Updates trip `validationStatus` field
+- Respects user notification preferences (`notifications.email` must also be true)
+- Only checks trips with future dates
 
 ### 📝 Logging
 

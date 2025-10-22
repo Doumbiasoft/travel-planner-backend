@@ -1,12 +1,11 @@
 import Trip from "../models/Trip";
-import User from "../models/User";
 import { amadeus } from "../config/amadeus";
 import { saveEmailBox } from "./mailbox.service";
 import { logger } from "../utils/logger";
 import { formatPriceWithSymbol } from "../utils/currency";
 import { readEmailTemplateContent } from "../utils/emailTemplateReader";
 import { PRICE_DROP_NOTIFICATION_TEMPLATE } from "../utils/constantEmailTemplatesNames";
-import { parseDateString, formatDateToString } from "../utils/dateHelper";
+import { parseDateString, formatDateToString, formatDateForDisplay } from "../utils/dateHelper";
 
 interface PriceCheckResult {
   tripId: string;
@@ -64,13 +63,17 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
     // Check if departure is in the past
     if (departure < today) {
       logger.warn(
-        `Trip ${trip._id} (${trip.tripName}) has departure date in the past (${departure.toISOString().split("T")[0]}), skipping price check`
+        `Trip ${trip._id} (${trip.tripName}) has departure date in the past (${
+          departure.toISOString().split("T")[0]
+        }), skipping price check`
       );
       await Trip.findByIdAndUpdate(trip._id, {
         $set: {
           validationStatus: {
             isValid: false,
-            reason: `Departure date (${departure.toISOString().split("T")[0]}) is in the past`,
+            reason: `Departure date (${
+              departure.toISOString().split("T")[0]
+            }) is in the past`,
             lastChecked: new Date(),
           },
         },
@@ -81,13 +84,17 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
     // Check if return date has passed
     if (returnDate < today) {
       logger.warn(
-        `Trip ${trip._id} (${trip.tripName}) has return date in the past (${returnDate.toISOString().split("T")[0]}), skipping price check`
+        `Trip ${trip._id} (${trip.tripName}) has return date in the past (${
+          returnDate.toISOString().split("T")[0]
+        }), skipping price check`
       );
       await Trip.findByIdAndUpdate(trip._id, {
         $set: {
           validationStatus: {
             isValid: false,
-            reason: `Return date (${returnDate.toISOString().split("T")[0]}) is in the past`,
+            reason: `Return date (${
+              returnDate.toISOString().split("T")[0]
+            }) is in the past`,
             lastChecked: new Date(),
           },
         },
@@ -100,13 +107,17 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
     minDeparture.setDate(minDeparture.getDate() + 1);
     if (departure < minDeparture) {
       logger.warn(
-        `Trip ${trip._id} (${trip.tripName}) departs too soon (${departure.toISOString().split("T")[0]}), Amadeus requires at least 1 day notice, skipping price check`
+        `Trip ${trip._id} (${trip.tripName}) departs too soon (${
+          departure.toISOString().split("T")[0]
+        }), Amadeus requires at least 1 day notice, skipping price check`
       );
       await Trip.findByIdAndUpdate(trip._id, {
         $set: {
           validationStatus: {
             isValid: false,
-            reason: `Departure date (${departure.toISOString().split("T")[0]}) is too soon. Flights must be booked at least 1 day in advance`,
+            reason: `Departure date (${
+              departure.toISOString().split("T")[0]
+            }) is too soon. Flights must be booked at least 1 day in advance`,
             lastChecked: new Date(),
           },
         },
@@ -114,15 +125,38 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
       return null;
     }
 
-    const response = await amadeus.shopping.flightOffersSearch.get({
+    // Fetch flights
+    const flightSearchParams: any = {
       originLocationCode: trip.originCityCode,
       destinationLocationCode: trip.destinationCityCode,
       departureDate: formatDateToString(trip.startDate),
       returnDate: formatDateToString(trip.endDate),
-      adults: "1",
+      adults: trip.preferences?.adults?.toString() || "1",
       max: 7,
       currencyCode: "USD",
-    });
+    };
+
+    // Only add optional parameters if they have valid values
+    if (trip.preferences?.children && trip.preferences.children > 0) {
+      flightSearchParams.children = trip.preferences.children.toString();
+    }
+    if (trip.preferences?.infants && trip.preferences.infants > 0) {
+      flightSearchParams.infants = trip.preferences.infants.toString();
+    }
+    if (trip.preferences?.travelClass) {
+      flightSearchParams.travelClass = trip.preferences.travelClass;
+    }
+
+    const flightsResponse = await amadeus.shopping.flightOffersSearch.get(
+      flightSearchParams
+    );
+
+    // Fetch hotels
+    const hotelsResponse = await amadeus.referenceData.locations.hotels.byCity
+      .get({
+        cityCode: trip.destinationCityCode,
+      })
+      .catch(() => ({ data: [] }));
 
     // If successful, mark as valid
     await Trip.findByIdAndUpdate(trip._id, {
@@ -135,14 +169,40 @@ export const fetchCurrentFlightPrices = async (trip: any) => {
       },
     });
 
-    return response.data || [];
+    return {
+      flights: flightsResponse.data || [],
+      hotels: hotelsResponse.data || [],
+    };
   } catch (error: any) {
-    logger.error(`Failed to fetch prices for trip ${trip._id}:`, error.message);
+    logger.error(`Error Object:`, JSON.stringify(error));
+    console.log(`Error Object 2 :`, error);
+    console.log(`Error Object 3 :`, JSON.stringify(error));
+
+    const errorMessage = error.message || error.description || "Unknown error";
+    logger.error(`Failed to fetch prices for trip ${trip._id}:`, errorMessage);
+
+    // Log error properties 
+    logger.error(`Error type: ${error.constructor?.name || typeof error}`);
+    if (error.code) logger.error(`Error code: ${error.code}`);
+    if (error.status) logger.error(`Error status: ${error.status}`);
+    if (error.statusCode) logger.error(`Error statusCode: ${error.statusCode}`);
+    if (error.response) {
+      logger.error(`Response data:`, error.response.data || error.response);
+    }
+    if (error.stack) {
+      logger.error(
+        `Stack trace: ${error.stack.split("\n").slice(0, 3).join("\n")}`
+      );
+    }
+
+    // Log all error keys
+    logger.error(`Error keys: ${Object.keys(error).join(", ")}`);
+
     await Trip.findByIdAndUpdate(trip._id, {
       $set: {
         validationStatus: {
           isValid: false,
-          reason: `API error: ${error.message}`,
+          reason: `API error: ${errorMessage}`,
           lastChecked: new Date(),
         },
       },
@@ -183,9 +243,6 @@ export const comparePrices = (
   };
 };
 
-// Move the flag outside the function to persist across calls
-let checkingPrices = false;
-
 export const sendPriceDropNotification = async (
   user: any,
   trip: any,
@@ -207,9 +264,9 @@ export const sendPriceDropNotification = async (
     const destination = trip.destination || "N/A";
 
     const dates =
-      parseDateString(trip.startDate).toLocaleDateString() +
+      formatDateForDisplay(trip.startDate) +
       " - " +
-      parseDateString(trip.endDate).toLocaleDateString();
+      formatDateForDisplay(trip.endDate);
 
     const name = user.firstName.toString().split(" ")[0];
     let template: any = await readEmailTemplateContent(
@@ -242,126 +299,121 @@ export const sendPriceDropNotification = async (
 };
 
 export const checkPricesForAllTrips = async () => {
-  if (checkingPrices) {
-    logger.warn("Price checker skipped: previous job still running");
+  logger.info("Starting price checker cron job...");
+
+  const now = new Date();
+
+  // Find all trips with price drop notifications enabled and end date in the future
+  const trips = await Trip.find({
+    "notifications.priceDrop": true,
+    "notifications.email": true,
+    endDate: { $gte: now }, // Only trips that haven't ended yet
+  }).populate("userId");
+
+  if (!trips.length) {
+    logger.info("No trips found with price drop notifications enabled");
     return;
   }
 
-  checkingPrices = true;
+  logger.info(`Checking prices for ${trips.length} trips...`);
 
-  try {
-    logger.info("Starting price checker cron job...");
+  let notificationsSent = 0;
 
-    const now = new Date();
-
-    // Find all trips with price drop notifications enabled and end date in the future
-    const trips = await Trip.find({
-      "notifications.priceDrop": true,
-      "notifications.email": true,
-      endDate: { $gte: now }, // Only trips that haven't ended yet
-    }).populate("userId");
-
-    if (!trips.length) {
-      logger.info("No trips found with price drop notifications enabled");
-      return;
-    }
-
-    logger.info(`Checking prices for ${trips.length} trips...`);
-
-    let notificationsSent = 0;
-
-    for (const trip of trips) {
-      try {
-        // Skip if trip end date has passed
-        const now = new Date();
-        now.setHours(0, 0, 0, 0);
-        const tripEndDate = parseDateString(trip.endDate);
-        if (tripEndDate < now) {
-          logger.info(
-            `Trip ${trip._id} (${
-              trip.tripName
-            }) has already ended on ${tripEndDate.toLocaleDateString()}, skipping...`
-          );
-          continue;
-        }
-
-        // Skip if trip doesn't have flight options stored
-        if (!trip.flightOptions?.length) {
-          logger.warn(
-            `Trip ${trip._id} (${trip.tripName}) has no stored flight options, skipping...`
-          );
-          continue;
-        }
-
-        // Fetch current prices from Amadeus API
-        const currentFlights = await fetchCurrentFlightPrices(trip);
-
-        if (!currentFlights) {
-          logger.warn(
-            `Failed to fetch current prices for trip ${trip._id}, skipping...`
-          );
-          continue;
-        }
-
-        // Compare old and new prices
-        const priceComparison = comparePrices(
-          trip.flightOptions as any[],
-          currentFlights,
-          0.05 // 5% threshold
-        );
-
-        if (!priceComparison || !priceComparison.priceDropped) {
-          logger.info(
-            `No significant price drop for trip ${trip._id} (${trip.tripName})`
-          );
-          continue;
-        }
-
-        // Get user information
-        const user = await User.findById(trip.userId);
-
-        if (!user) {
-          logger.warn(`User not found for trip ${trip._id}, skipping...`);
-          continue;
-        }
-
-        // Send notification
-        await sendPriceDropNotification(user, trip, {
-          ...priceComparison,
-          tripId: trip._id.toString(),
-          tripName: trip.tripName,
-        });
-
-        // Update trip with new flight options
-        await Trip.findByIdAndUpdate(trip._id, {
-          $set: {
-            flightOptions: currentFlights.slice(0, 6),
-          },
-        });
-
-        notificationsSent++;
-
-        logger.info(
-          `Price drop detected for trip ${trip._id} (${trip.tripName}): ${
-            priceComparison.oldPrice
-          } -> ${
-            priceComparison.newPrice
-          } (${priceComparison.percentageChange.toFixed(1)}% drop)`
-        );
-      } catch (error: any) {
-        logger.error(
-          `Error checking prices for trip ${trip._id}:`,
-          error.message
-        );
+  for (const trip of trips) {
+    try {
+      // Validate user is populated
+      if (!trip.userId || typeof trip.userId === 'string') {
+        logger.warn(`User not populated for trip ${trip._id}, skipping...`);
+        continue;
       }
-    }
 
-    logger.info(
-      `Price checker completed. Sent ${notificationsSent} notifications out of ${trips.length} trips checked.`
-    );
-  } catch (error: any) {
-    logger.error("Price checker cron job failed:", error.message);
-  } finally {
-    checkingPrices = false;
+      const user = trip.userId as any;
+
+      // Skip if trip end date has passed
+      const now = new Date();
+      now.setHours(0, 0, 0, 0);
+      const tripEndDate = parseDateString(trip.endDate);
+      if (tripEndDate < now) {
+        logger.info(
+          `Trip ${trip._id} (${
+            trip.tripName
+          }) has already ended on ${tripEndDate.toLocaleDateString()}, skipping...`
+        );
+        continue;
+      }
+
+      // Skip if trip doesn't have flight options stored
+      if (!trip.flightOptions?.length) {
+        logger.warn(
+          `Trip ${trip._id} (${trip.tripName}) has no stored flight options, skipping...`
+        );
+        continue;
+      }
+
+      // Fetch current prices from Amadeus API
+      const currentOffers = await fetchCurrentFlightPrices(trip);
+
+      if (!currentOffers) {
+        logger.warn(
+          `Failed to fetch current prices for trip ${trip._id}, skipping...`
+        );
+        continue;
+      }
+
+      // Compare old and new prices
+      const priceComparison = comparePrices(
+        trip.flightOptions as any[],
+        currentOffers.flights,
+        0.05 // 5% threshold
+      );
+
+      if (!priceComparison || !priceComparison.priceDropped) {
+        logger.info(
+          `No significant price drop for trip ${trip._id} (${trip.tripName})`
+        );
+        continue;
+      }
+
+      // Validate user has required fields
+      if (!user.email || !user.firstName || !user.lastName) {
+        logger.warn(`User ${user._id} missing required fields for notification, skipping...`);
+        continue;
+      }
+
+      // Send notification
+      await sendPriceDropNotification(user, trip, {
+        ...priceComparison,
+        tripId: trip._id.toString(),
+        tripName: trip.tripName,
+      });
+
+      // Update trip with new flight and hotel options
+      await Trip.findByIdAndUpdate(trip._id, {
+        $set: {
+          flightOptions: currentOffers.flights.slice(0, 6),
+          hotelOptions: currentOffers.hotels.slice(0, 6),
+        },
+      });
+
+      notificationsSent++;
+
+      logger.info(
+        `Price drop detected for trip ${trip._id} (${trip.tripName}): ${
+          priceComparison.oldPrice
+        } -> ${
+          priceComparison.newPrice
+        } (${priceComparison.percentageChange.toFixed(1)}% drop)`
+      );
+    } catch (error: any) {
+      logger.error(
+        `Error checking prices for trip ${trip._id}:`,
+        error.message
+      );
+      logger.error(`Full error stack:`, error.stack);
+    }
   }
+
+  logger.info(
+    `Price checker completed. Sent ${notificationsSent} notifications out of ${trips.length} trips checked.`
+  );
 };
