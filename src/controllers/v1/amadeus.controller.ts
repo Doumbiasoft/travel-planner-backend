@@ -134,6 +134,11 @@ class AmadeusController {
           required: false,
           type: "string",
         },
+        {
+          field: "refreshOffers",
+          required: false,
+          type: "string",
+        },
       ],
     }),
     logRequest()
@@ -153,6 +158,7 @@ class AmadeusController {
       children,
       infants,
       travelClass,
+      refreshOffers,
     } = req.query;
 
     if (
@@ -168,6 +174,78 @@ class AmadeusController {
     await amadeusOffersDateValidation(res, tripId, startDate, endDate);
 
     try {
+      // Check if we should return cached offers
+      const shouldRefresh = refreshOffers === "true";
+
+      // If tripId is provided and refreshOffers is false, try to return cached data
+      if (tripId && !shouldRefresh) {
+        const trip = await Trip.findById(tripId);
+
+        if (
+          trip &&
+          trip.flightOptions &&
+          trip.hotelOptions &&
+          trip.flightOptions.length > 0 &&
+          trip.hotelOptions.length > 0
+        ) {
+          // Return cached offers
+          const flights = trip.flightOptions as any[];
+          const hotels = trip.hotelOptions as any[];
+          const best = findBestPackage(flights, hotels, Number(budget));
+
+          // Extract currency from flight data
+          const currency = flights[0]?.price?.currency || "USD";
+
+          const getFlightPrice = (flight: any) => {
+            if (typeof flight.price === "object") {
+              return flight.price?.total || "N/A";
+            }
+            return flight.price || "N/A";
+          };
+
+          const getHotelPrice = (hotel: any) => {
+            return hotel.offers?.[0]?.price?.total || hotel.price || "N/A";
+          };
+
+          const tip = best
+            ? `Recommended: flight ${formatPriceWithSymbol(
+                getFlightPrice(best.flight),
+                currency
+              )} + hotel ${formatPriceWithSymbol(
+                getHotelPrice(best.hotel),
+                currency
+              )}`
+            : `No package fits budget ${formatPriceWithSymbol(
+                Number(budget),
+                currency
+              )}`;
+
+          const data = {
+            tip,
+            recommended: best
+              ? {
+                  ...best,
+                  currency,
+                  flightPrice: getFlightPrice(best.flight),
+                  hotelPrice: getHotelPrice(best.hotel),
+                }
+              : null,
+            flights: flights.slice(0, 6),
+            hotels: hotels.slice(0, 6),
+            currency,
+            cached: true, // Indicate this is cached data
+          };
+
+          return sendResponse(
+            res,
+            data,
+            "Fetched cached offers successfully",
+            HttpStatus.OK
+          );
+        }
+      }
+
+      // If no cached data or refreshOffers is true, fetch fresh data from Amadeus
       // Prepare flight search parameters
       const flightSearchParams: any = {
         originLocationCode: originCityCode,
@@ -260,6 +338,7 @@ class AmadeusController {
         flights: flights.slice(0, 6),
         hotels: hotels.slice(0, 6),
         currency,
+        cached: false, // Indicate this is fresh data from Amadeus
       };
 
       return sendResponse(
