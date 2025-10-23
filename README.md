@@ -6,6 +6,10 @@ A comprehensive REST API for planning, organizing, and managing travel itinerari
 
 Travel Planner is a full-stack web application backend designed to help users plan, organize, and manage their travel itineraries effortlessly. The API provides comprehensive endpoints for user authentication, trip management, flight/hotel search, itinerary planning, and PDF export functionality.
 
+### 🔗 The Frontend Repository URL:
+
+<https://github.com/doumbiasoft/travel-planner-frontend>
+
 ## ✨ Features
 
 - 🔐 **User Authentication**: JWT-based authentication with access and refresh tokens
@@ -1342,11 +1346,13 @@ http://localhost:3001/api-docs
 ### ⚡ Caching
 
 **City Search Caching:**
+
 - City search results are cached for 1 hour using `node-cache`
 - Reduces API calls to Amadeus
 - Improves response times for repeated searches
 
 **Offer Caching:**
+
 - Flight and hotel offers are cached in the Trip collection (`flightOptions` and `hotelOptions` fields)
 - By default, the `/api/v1/amadeus/search` endpoint returns cached offers when available
 - Use `refreshOffers=true` query parameter to fetch fresh data from Amadeus API
@@ -1377,14 +1383,17 @@ Template variables:
 The application includes background cron jobs for:
 
 **Email Processing Cron** (runs every 5 seconds):
+
 - Processes queued emails from EmailBox collection
 - Sends emails via SMTP with transaction support
 - Marks emails as sent on success
 
 **Email Cleanup Cron** (runs every weekday at 9 AM):
+
 - Deletes sent emails to prevent database bloat
 
 **Price Check Cron** (runs every 6 hours):
+
 - Fetches current flight and hotel prices from Amadeus API for trips with `notifications.priceDrop: true`
 - Compares with cached prices in `flightOptions` and `hotelOptions`
 - Sends email notification if price drops ≥ 5%
