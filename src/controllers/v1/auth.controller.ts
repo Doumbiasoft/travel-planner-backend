@@ -40,7 +40,6 @@ import {
 import { EmailBox } from "../../models/EmailBox";
 import { saveEmailBox } from "../../services/mailbox.service";
 import authMiddleware from "../../middlewares/auth.middleware";
-const REFRESH_TOKEN_PATH = "/api/v1/auth/refresh-token";
 
 @Router(buildRoute("v1/auth"))
 class AuthController {
@@ -208,8 +207,8 @@ class AuthController {
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
           secure: ENV.NODE_ENV === "production",
-          sameSite: "strict",
-          path: REFRESH_TOKEN_PATH,
+          sameSite: ENV.NODE_ENV === "production" ? "none" : "lax",
+          path: "/",
           maxAge: 7 * 24 * 60 * 60 * 1000,
         }),
         { accessToken: accessToken },
@@ -283,7 +282,11 @@ class AuthController {
     logRequest()
   )
   async logout(@Req _req: Request, @Res res: Response) {
-    res.clearCookie("refreshToken", { path: REFRESH_TOKEN_PATH });
+    res.clearCookie("refreshToken", {
+      path: "/",
+      sameSite: ENV.NODE_ENV === "production" ? "none" : "lax",
+      secure: ENV.NODE_ENV === "production"
+    });
     return sendResponse(
       res,
       { ok: true },
@@ -794,8 +797,8 @@ class AuthController {
         res.cookie("refreshToken", refreshToken, {
           httpOnly: true,
           secure: ENV.NODE_ENV === "production",
-          sameSite: "strict",
-          path: REFRESH_TOKEN_PATH,
+          sameSite: ENV.NODE_ENV === "production" ? "none" : "lax",
+          path: "/",
           maxAge: 7 * 24 * 60 * 60 * 1000,
         }),
         { accessToken: accessToken },
