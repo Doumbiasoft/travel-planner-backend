@@ -79,11 +79,10 @@ export const createAMarker = async (
 };
 
 export const amadeusOffersDateValidation = async (
-  res: Response,
   tripId: any,
   startDate: any,
   endDate: any
-) => {
+): Promise<{ isValid: boolean; error?: string }> => {
   // Validate dates - parse date strings without timezone conversion
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -106,11 +105,10 @@ export const amadeusOffersDateValidation = async (
         },
       });
     }
-    return sendError(
-      res,
-      "Departure date cannot be in the past",
-      HttpStatus.BAD_REQUEST
-    );
+    return {
+      isValid: false,
+      error: "Departure date cannot be in the past",
+    };
   }
 
   // Check if departure is too soon (Amadeus requires at least 1 day notice)
@@ -130,11 +128,10 @@ export const amadeusOffersDateValidation = async (
         },
       });
     }
-    return sendError(
-      res,
-      "Departure date must be at least 1 day in the future",
-      HttpStatus.BAD_REQUEST
-    );
+    return {
+      isValid: false,
+      error: "Departure date must be at least 1 day in the future",
+    };
   }
 
   // Check if return date is before departure
@@ -150,10 +147,11 @@ export const amadeusOffersDateValidation = async (
         },
       });
     }
-    return sendError(
-      res,
-      "Return date must be after departure date",
-      HttpStatus.BAD_REQUEST
-    );
+    return {
+      isValid: false,
+      error: "Return date must be after departure date",
+    };
   }
+
+  return { isValid: true };
 };

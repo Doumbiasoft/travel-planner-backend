@@ -316,7 +316,11 @@ class TripController {
 
       await updateTripByIdAndUserId(tripId, req.user._id, data);
 
-      await amadeusOffersDateValidation(res, tripId, startDate, endDate);
+      // Validate trip dates
+      const validation = await amadeusOffersDateValidation(tripId, startDate, endDate);
+      if (!validation.isValid) {
+        return sendError(res, validation.error || "Invalid dates", HttpStatus.BAD_REQUEST);
+      }
 
       return sendResponse(
         res,

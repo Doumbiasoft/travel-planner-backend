@@ -170,8 +170,12 @@ class AmadeusController {
     ) {
       return sendError(res, "Keyword are required", HttpStatus.BAD_REQUEST);
     }
+
     // Validate trip dates
-    await amadeusOffersDateValidation(res, tripId, startDate, endDate);
+    const validation = await amadeusOffersDateValidation(tripId, startDate, endDate);
+    if (!validation.isValid) {
+      return sendError(res, validation.error || "Invalid dates", HttpStatus.BAD_REQUEST);
+    }
 
     try {
       // Check if we should return cached offers
